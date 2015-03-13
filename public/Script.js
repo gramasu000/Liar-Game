@@ -60,5 +60,11 @@ socket.on('message', function(data) {
 $(function() {
     $("#chatControls").hide();
     $("#pseudoSet").click(function() {setPseudo()});
+    $("#pseudoInput").keypress(function(e) { 
+        if(e.which == 13)
+            setPseudo()});
     $("#submit").click(function() {sentMessage();});
+    $("#messageInput").keypress(function(e) {
+        if(e.which == 13)
+            sentMessage(); });
 });
