@@ -1,0 +1,23 @@
+div#gameContainer {
+	width:800px;
+    height:600px;
+    float:left;
+    padding:3px;
+}
+div#chatContainer{
+    line-height: 20px;
+    width: 370px;
+    float: right;
+    margin-right: 70px;
+}
+div#chatEntries {
+	width: 350px;
+	height: 400px;
+    border-style: solid;
+    border-color: black;
+    padding: 5px;
+    overflow: auto;
+}
+p {
+	margin: 0;
+}

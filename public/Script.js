@@ -2,10 +2,12 @@ var socket = io.connect();
 
 var self;
 var allusers = [];
+var num_messages = 0;
 
 // Add a message and a pseudo
 function addMessage(msg, pseudo) {
-    $("#chatEntries").append('<div class="message"><p>' + pseudo + ' : ' + msg + '</p></div>');
+    num_messages++;
+    $("#chatEntries").append('<div class="' + num_messages +'" ><p>' + pseudo + ' : ' + msg + '</p></div>');
 }
 
 // Sending a message
@@ -29,6 +31,7 @@ function sentMessage() {
             socket.emit('message', messagerecip);
             addMessage($('#messageInput').val(), "Me", new Date().toISOString(), true);
             $('#messageInput').val('');
+            
         }
     }
 }
@@ -57,7 +60,7 @@ socket.on('message', function(data) {
     }
 });
 
-$(function() {
+function onStart() {
     $("#chatControls").hide();
     $("#pseudoSet").click(function() {setPseudo()});
     $("#pseudoInput").keypress(function(e) { 
@@ -67,4 +70,6 @@ $(function() {
     $("#messageInput").keypress(function(e) {
         if(e.which == 13)
             sentMessage(); });
-});
+}
+
+$(document).ready(onStart);

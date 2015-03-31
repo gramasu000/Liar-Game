@@ -1,5 +1,5 @@
 // Create a Jade object
-var jade = require('jade');
+var ejs = require('ejs');
 // Create a Express JS server object
 var express = require('express');
 app = express();
@@ -11,30 +11,16 @@ var allpseudos = [];
 
 // Set the parameters
 app.set('views', __dirname + '/views');
-app.set('view engine', 'jade');
+app.set('view engine', 'ejs');
 app.set("view options", { layout: false });
 app.use(express.static(__dirname + '/public'));
-
-// Configure function
-//app.configure(function() {
-//    app.use(express.static(__dirname + '/public'));
-//});
+app.engine('html', ejs.renderFile);
 
 app.get('/', function(req, res){
-  res.render('home.jade');
+  res.render('home.html');
 });
 
-
 var server = http.createServer(app);
-/*
-app.listen(3000, function () {
-
-  var host = server.address().address
-  var port = server.address().port
-
-  console.log('Example app listening at http://%s:%s', host, port)
-
-})*/
 
 // Create a socket.io object
 var io = require('socket.io').listen(server);
@@ -56,7 +42,7 @@ io.sockets.on('connection', function (socket) {
 	
     	var data = { 'message' : message[0], 'pseudo' : socket.pseudo, 'recipient' : message[1]};
     	socket.broadcast.emit('message', data);
-    	console.log("user " + socket.pseudo + " send this : " + message);
+    	console.log("user " + socket.pseudo + " send this : " + message[0] + " to " + message[1]);
 
 	});
 });
