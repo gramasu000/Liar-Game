@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Chat</title>
+		<script src="jquery.min.js"></script>
+		<script src="/socket.io/socket.io.js"></script>
+		<script src="phaser.min.js"></script>
+		<script src="script.js"></script>
+		<link rel="stylesheet" type="text/css" href="style.css">
+	</head>
+	<body>
+		<div id="gameContainer">
+			<script type="text/javascript">
+				// Used window onload function
+				window.onload = function() {
+				var game = new Phaser.Game(800, 600, Phaser.AUTO, 'gameContainer');
+				};
+			</script>
+		</div>
+		<div id="chatContainer">
+			<header>
+				<h1>Chat</h1>
+			</header>
+			<input type='text' id="pseudoInput"></input>
+			<button id="pseudoSet">Set Pseudo</button>
+			<div id="chatEntries"></div>
+			<div id="chatControls"> 
+				<input type='text' id="messageInput"></input>
+				<button id="submit">Send</button>
+			</div>
+			<div id="otheruser"></div>
+		</div>
+	</body>
+</html>
