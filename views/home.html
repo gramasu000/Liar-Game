@@ -6,6 +6,10 @@
 		<script src="/socket.io/socket.io.js"></script>
 		<script src="phaser.min.js"></script>
 		<script src="script.js"></script>
+		<script src="Boot.js"></script>
+		<script src="Preloader.js"></script>
+		<script src="MainMenu.js"></script>
+		<script src="Game.js"></script>
 		<link rel="stylesheet" type="text/css" href="style.css">
 	</head>
 	<body>
@@ -13,7 +17,13 @@
 			<script type="text/javascript">
 				// Used window onload function
 				window.onload = function() {
-				var game = new Phaser.Game(800, 600, Phaser.AUTO, 'gameContainer');
+					var game = new Phaser.Game(800, 600, Phaser.AUTO, 'gameContainer');
+					game.state.add('Boot', BasicGame.Boot);
+					game.state.add('Preloader', BasicGame.Preloader);
+					game.state.add('MainMenu', BasicGame.MainMenu);
+					game.state.add('Game', BasicGame.Game);
+
+					game.state.start('Boot');
 				};
 			</script>
 		</div>
