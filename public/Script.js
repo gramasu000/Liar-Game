@@ -8,6 +8,7 @@ var num_messages = 0;
 function addMessage(msg, pseudo) {
     num_messages++;
     $("#chatEntries").append('<div class="' + num_messages +'" ><p>' + pseudo + ' : ' + msg + '</p></div>');
+    $("#chatEntries").scrollTop(document.getElementById("chatEntries").scrollHeight);
 }
 
 // Sending a message
