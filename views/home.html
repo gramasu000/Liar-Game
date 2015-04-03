@@ -9,6 +9,7 @@
 		<script src="game/Boot.js"></script>
 		<script src="game/Preloader.js"></script>
 		<script src="game/MainMenu.js"></script>
+		<script src="game/SetPseudo.js"></script>
 		<script src="game/Game.js"></script>
 		<link rel="stylesheet" type="text/css" href="styles/style.css">
 	</head>
@@ -16,23 +17,25 @@
 		<div id="gameContainer">
 			<script type="text/javascript">
 				// Used window onload function
+				var game;
 				window.onload = function() {
-					var game = new Phaser.Game(800, 600, Phaser.AUTO, 'gameContainer');
+					game = new Phaser.Game(800, 600, Phaser.AUTO, 'gameContainer');
 					game.state.add('Boot', BasicGame.Boot);
 					game.state.add('Preloader', BasicGame.Preloader);
 					game.state.add('MainMenu', BasicGame.MainMenu);
+					game.state.add('SetPseudo', BasicGame.SetPseudo);
 					game.state.add('Game', BasicGame.Game);
 
 					game.state.start('Boot');
 				};
 			</script>
+			<input type='text' id="pseudoInput" class="pseudo"></input>
+			<button id="pseudoSet" class="pseudo">Enter Name</button>
 		</div>
 		<div id="chatContainer">
 			<header>
 				<h1>Chat</h1>
 			</header>
-			<input type='text' id="pseudoInput"></input>
-			<button id="pseudoSet">Set Pseudo</button>
 			<div id="chatEntries"></div>
 			<div id="chatControls"> 
 				<input type='text' id="messageInput"></input>

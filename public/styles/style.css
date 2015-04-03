@@ -18,6 +18,23 @@ div#chatEntries {
     padding: 5px;
     overflow: auto;
 }
+#pseudoInput {
+    position: absolute;
+    top: 175px;
+    left: 250px;
+    width: 300px;
+    height: 100px;
+    font-size: 250%;
+    text-align: center;
+}
+#pseudoSet{
+    position: absolute;
+    top: 325px;
+    left: 250px;
+    width: 300px;
+    height: 100px;
+    font-size: 250%;
+}
 p {
 	margin: 0;
 }

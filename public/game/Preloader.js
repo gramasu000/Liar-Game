@@ -25,10 +25,19 @@ BasicGame.Preloader.prototype = {
 		this.load.setPreloadSprite(this.preloadBar);
 
 		//	Here we load the rest of the assets our game needs.
-		//	As this is just a Project Template I've not provided these assets, swap them for your own.
-		this.load.image('titlepage', 'assets/exampleBackground.png');
-		this.load.image('playButton', 'assets/playButton.png');//, 'images/play_button.json');
+
+		// Assets for the Main Menu State
+		this.load.image('titlepage', 'assets/exampleBackground.jpg');
+		this.load.image('playButton', 'assets/playButton.png');
 		this.load.audio('titleMusic', 'assets/mainMenu.mp3');
+
+		// Assets for the Set Pseudo State
+
+		// Assets for the Game State
+		this.load.image('gameBackground','assets/gameBackground.jpeg');
+		this.load.image('kingdom','assets/kingdom.gif');
+		this.load.image('defend', 'assets/defend.png');
+		this.load.image('attack','assets/attack.png');
 
 	},
 

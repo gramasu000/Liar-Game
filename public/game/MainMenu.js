@@ -21,9 +21,9 @@ BasicGame.MainMenu.prototype = {
 		this.titlePage.width = 800;
 		this.titlePage.height = 650;
 
-		this.playButton = this.add.button(300, 200, 'playButton', this.startGame, this, 'buttonOver', 'buttonOut', 'buttonOver');
-		this.playButton.width = 200;
-		this.playButton.height = 100;
+		this.playButton = this.add.button(300, 400, 'playButton', this.startGame, this, 'buttonOver', 'buttonOut', 'buttonOver');
+        this.playButton.width = 200;
+        this.playButton.height = 100;
 	},
 
 	update: function () {
@@ -38,7 +38,7 @@ BasicGame.MainMenu.prototype = {
 		this.music.stop();
 
 		//	And start the actual game
-		this.state.start('Game');
+		this.state.start('SetPseudo');
 
 	}
 

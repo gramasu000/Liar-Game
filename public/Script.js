@@ -1,6 +1,6 @@
 var socket = io.connect();
 
-var self;
+var self = null;
 var allusers = [];
 var num_messages = 0;
 
@@ -46,6 +46,8 @@ function setPseudo() {
         $('#chatControls').show();
         $('#pseudoInput').hide();
         $('#pseudoSet').hide();
+        game.state.start('Game');
+        $("#pseudoInput").val("");
     }
 }
 
@@ -63,6 +65,7 @@ socket.on('message', function(data) {
 
 function onStart() {
     $("#chatControls").hide();
+    $(".pseudo").hide();
     $("#pseudoSet").click(function() {setPseudo()});
     $("#pseudoInput").keypress(function(e) { 
         if(e.which == 13)
