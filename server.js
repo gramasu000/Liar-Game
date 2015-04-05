@@ -28,7 +28,7 @@ server.listen(3000);
 
 // Connection event
 io.sockets.on('connection', function (socket) {
-
+	console.log('a user connected');
 	// SetPseudo event
 	socket.on('setPseudo', function (data) {
     	socket.pseudo = data;
@@ -46,6 +46,6 @@ io.sockets.on('connection', function (socket) {
 
 	//Alerts when someone disconnects
 	socket.on('disconnect', function(){
-		console.log('user disconnected');
+		console.log('a user disconnected');
 	});
 });
