@@ -26,6 +26,17 @@ var server = http.createServer(app);
 var io = require('socket.io').listen(server);
 server.listen(3000);
 
+//Send time to all players
+var timer = {'timer': 150};
+function sendTime(){
+	if (timer == 0)
+		timer['timer'] = 150;
+	io.sockets.emit('time', timer);
+	timer['timer']--;
+}
+
+setInterval(sendTime,1000);
+
 // Connection event
 io.sockets.on('connection', function (socket) {
 	console.log('a user connected');
@@ -41,8 +52,9 @@ io.sockets.on('connection', function (socket) {
 	socket.on('message', function (message) {
     	var data = { 'message' : message[0], 'pseudo' : socket.pseudo, 'recipient' : message[1]};
     	socket.broadcast.emit('message', data);
-    	console.log("user " + socket.pseudo + " send this : " + message[0] + " to " + message[1]);
+    	console.log("user " + socket.pseudo + " sent to user " + message[1] + ": " + message[0]);
 	});
+
 
 	//Alerts when someone disconnects
 	socket.on('disconnect', function(){
