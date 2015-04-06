@@ -1,4 +1,4 @@
-// Create a Jade object
+// Create a EJS object
 var ejs = require('ejs');
 // Create a Express JS server object
 var express = require('express');
@@ -26,23 +26,38 @@ var server = http.createServer(app);
 var io = require('socket.io').listen(server);
 server.listen(3000);
 
-// Connection event
-io.sockets.on('connection', function (socket) { 
+//Send time to all players
+var timer = {'timer': 150};
+function sendTime(){
+	if (timer == 0)
+		timer['timer'] = 150;
+	io.sockets.emit('time', timer);
+	timer['timer']--;
+}
 
+setInterval(sendTime,1000);
+
+// Connection event
+io.sockets.on('connection', function (socket) {
+	console.log('a user connected');
 	// SetPseudo event
 	socket.on('setPseudo', function (data) {
     	socket.pseudo = data;
-      allpseudos.push(data);
-      socket.broadcast.emit('setPseudo', data);
+      	allpseudos.push(data);
+      	socket.broadcast.emit('setPseudo', data);
 
 	});
 
 	// Obtaining a sent message event
 	socket.on('message', function (message) {
-	
     	var data = { 'message' : message[0], 'pseudo' : socket.pseudo, 'recipient' : message[1]};
     	socket.broadcast.emit('message', data);
-    	console.log("user " + socket.pseudo + " send this : " + message[0] + " to " + message[1]);
+    	console.log("user " + socket.pseudo + " sent to user " + message[1] + ": " + message[0]);
+	});
 
+
+	//Alerts when someone disconnects
+	socket.on('disconnect', function(){
+		console.log('a user disconnected');
 	});
 });
