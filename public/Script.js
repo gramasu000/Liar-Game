@@ -27,8 +27,6 @@ function sentMessage() {
         if (recipient != self)
         {
             var messagerecip = [$('#messageInput').val(), recipient]
-            //socket.emit('recipient', document.getElementById("recipient").value);
-            //console.log(document.getElementById("recipient").value);
             socket.emit('message', messagerecip);
             addMessage($('#messageInput').val(), "Me", new Date().toISOString(), true);
             $('#messageInput').val('');
@@ -43,6 +41,7 @@ function setPseudo() {
     {
         socket.emit('setPseudo', $("#pseudoInput").val());
         self = $("#pseudoInput").val();
+        allusers.push(self);
         $('#chatControls').show();
         $('#pseudoInput').hide();
         $('#pseudoSet').hide();
