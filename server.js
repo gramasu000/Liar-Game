@@ -74,11 +74,18 @@ io.sockets.on('connection', function (socket) {
 	//Hosting a room
 	//NOTE: Need to implement error handling stuff
 	socket.on('host', function(roomName){
-		socket.join(roomName);
-		rooms[roomName] = 1;
-		clients[socket.id] = roomName;
-		clientPlayers[socket.id] = 0;
-		console.log("user " + socket.id + " has hosted room " + roomName);
+		if (roomExists(roomName)){
+			io.to(socket.id).emit('roomApproved',false);
+			console.log("Room with same name already exists!");
+		}
+		else{
+			socket.join(roomName);
+			rooms[roomName] = 1;
+			clients[socket.id] = roomName;
+			clientPlayers[socket.id] = 0;
+			console.log("user " + socket.id + " has hosted room " + roomName);
+			io.to(socket.id).emit('roomApproved',true);
+		}
 	});
 
 	//Joining a room
@@ -94,12 +101,14 @@ io.sockets.on('connection', function (socket) {
 			var data = {'id' : socket.id};
 			//io.to(roomName).emit('joined',data);
 			console.log("user " + socket.id + " has joined room " + roomName);
+			io.to(socket.id).emit('roomApproved',true);
 			if (rooms[roomName] == 4){
 				io.to(roomName).emit('gameStart',roomName);
 			}
 		}
 		else{
 			console.log("Room " + roomName + " does not exist");
+			io.to(socket.id).emit('roomApproved',false);
 		}
 	});
 

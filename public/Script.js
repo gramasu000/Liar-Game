@@ -60,7 +60,6 @@ function hostRoom(){
         socket.emit('host', $("#hostRoomInput").val());
         $('#hostRoomInput').hide();
         $('#hostRoom').hide();
-        game.state.start("WaitingRoom");
     }
 }
 
@@ -70,9 +69,16 @@ function joinRoom(){
         socket.emit('join', $("#joinRoomInput").val());
         $('#joinRoomInput').hide();
         $('#joinRoom').hide();
-        game.state.start("WaitingRoom");
     }
 }
+
+socket.on('roomApproved',function(data){
+    if (data == true){
+        game.state.start("WaitingRoom");
+    }
+    else
+        game.state.start("MainMenu");
+})
 
 socket.on('gameStart', function(data){
     game.state.start("SetPseudo");
