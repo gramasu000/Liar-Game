@@ -62,16 +62,16 @@ io.sockets.on('connection', function (socket) {
 	console.log('user ' + socket.id + ' connected');
 	// SetPseudo event
 	socket.on('setPseudo', function (data) {
-    	socket.pseudo = data;
-      	allpseudos.push(data);
-      	socket.broadcast.emit('setPseudo', data);
+    	socket.pseudo = data['pseudo'];
+      	allpseudos.push(data['pseudo']);
+      	io.to(clients[socket.id]).emit('setPseudo', data);
 
 	});
 
 	// Obtaining a sent message event
 	socket.on('message', function (message) {
     	var data = { 'message' : message[0], 'pseudo' : socket.pseudo, 'recipient' : message[1]};
-    	socket.broadcast.emit('message', data);
+    	io.to(clients[socket.id]).emit('message', data);
     	console.log("user " + socket.pseudo + " sent to user " + message[1] + ": " + message[0]);
 	});
 
@@ -97,7 +97,7 @@ io.sockets.on('connection', function (socket) {
 			//io.to(roomName).emit('joined',data);
 			console.log("user " + socket.id + " has joined room " + roomName);
 			if (rooms[roomName] == 4){
-				io.to(roomName).emit('gameStart');
+				io.to(roomName).emit('gameStart',roomName);
 			}
 		}
 		else{

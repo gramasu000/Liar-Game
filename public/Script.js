@@ -18,9 +18,10 @@ function sentMessage() {
         var recipient = self;
         for (var i = 0; i < allusers.length; i++)
         {
+            console.log(allusers[i]);
             if (document.getElementById(allusers[i]).checked)
             {
-                recipient = allusers[i]
+                recipient = allusers[i];
             }
         }
 
@@ -30,7 +31,7 @@ function sentMessage() {
             //socket.emit('recipient', document.getElementById("recipient").value);
             //console.log(document.getElementById("recipient").value);
             socket.emit('message', messagerecip);
-            addMessage($('#messageInput').val(), "Me", new Date().toISOString(), true);
+            addMessage($('#messageInput').val(), self + " to " + recipient, new Date().toISOString(), true);
             $('#messageInput').val('');
             
         }
@@ -41,8 +42,10 @@ function sentMessage() {
 function setPseudo() {
     if ($("#pseudoInput").val() != "")
     {
-        socket.emit('setPseudo', $("#pseudoInput").val());
         self = $("#pseudoInput").val();
+        var data = {'pseudo' : self};
+        socket.emit('setPseudo', data);
+        
         $('#chatControls').show();
         $('#pseudoInput').hide();
         $('#pseudoSet').hide();
@@ -69,13 +72,13 @@ function joinRoom(){
     }
 }
 
-socket.on('gameStart', function(){
+socket.on('gameStart', function(data){
     game.state.start("SetPseudo");
 });
 
 socket.on('setPseudo', function(data) {
-    allusers.push(data);
-    $("#otheruser").append('<div><input type="radio" id="'+ data + '" name="recipient" value="'+ data +'">' + data + '</div>');
+    allusers.push(data['pseudo']);
+    $("#otheruser").append('<div><input type="radio" id="'+ data['pseudo'] + '" name="recipient" value="'+ data['pseudo'] +'">' + data['pseudo'] + '</div>');    
 });
 
 socket.on('message', function(data) {
@@ -110,7 +113,7 @@ function onStart() {
     $("#joinRoomInput").keypress(function(e) { 
         if(e.which == 13)
             joinRoom()});
-    $("#submit").click(function() {sentMessage();});
+    $("#submit").click(function() {sentMessage()});
     $("#messageInput").keypress(function(e) {
         if(e.which == 13)
             sentMessage(); });
