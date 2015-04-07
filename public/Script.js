@@ -51,6 +51,28 @@ function setPseudo() {
     }
 }
 
+function hostRoom(){
+    if ($("#hostRoomInput").val() != ""){
+        socket.emit('host', $("#hostRoomInput").val());
+        $('#hostRoomInput').hide();
+        $('#hostRoom').hide();
+        game.state.start("WaitingRoom");
+    }
+}
+
+function joinRoom(){
+    if ($("#joinRoomInput").val() != ""){
+        socket.emit('join', $("#joinRoomInput").val());
+        $('#joinRoomInput').hide();
+        $('#joinRoom').hide();
+        game.state.start("WaitingRoom");
+    }
+}
+
+socket.on('gameStart', function(){
+    game.state.start("SetPseudo");
+});
+
 socket.on('setPseudo', function(data) {
     allusers.push(data);
     $("#otheruser").append('<div><input type="radio" id="'+ data + '" name="recipient" value="'+ data +'">' + data + '</div>');
@@ -63,9 +85,8 @@ socket.on('message', function(data) {
     }
 });
 
-//Why data['time'] as opposed to data['timer'] is confusing me
 socket.on('time', function(data) {
-    console.log(data['timer']);
+    //console.log(data['timer']);
     var seconds = data['timer'] % 60;
     var minutes = Math.floor(data['timer'] / 60);
     var output = (seconds < 10)? (minutes + ":0" + seconds) : (minutes + ":" + seconds);
@@ -75,14 +96,25 @@ socket.on('time', function(data) {
 function onStart() {
     $("#chatControls").hide();
     $(".pseudo").hide();
+    $(".hRoom").hide();
+    $(".jRoom").hide();
     $("#pseudoSet").click(function() {setPseudo()});
     $("#pseudoInput").keypress(function(e) { 
         if(e.which == 13)
             setPseudo()});
+    $("#hostRoom").click(function() {hostRoom()});
+    $("#hostRoomInput").keypress(function(e) { 
+        if(e.which == 13)
+            hostRoom()});
+    $("#joinRoom").click(function() {joinRoom()});
+    $("#joinRoomInput").keypress(function(e) { 
+        if(e.which == 13)
+            joinRoom()});
     $("#submit").click(function() {sentMessage();});
     $("#messageInput").keypress(function(e) {
         if(e.which == 13)
             sentMessage(); });
+
 }
 
 $(document).ready(onStart);

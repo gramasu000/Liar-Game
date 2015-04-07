@@ -35,6 +35,40 @@ div#chatEntries {
     height: 100px;
     font-size: 250%;
 }
+#hostRoomInput {
+    position: absolute;
+    top: 175px;
+    left: 250px;
+    width: 300px;
+    height: 100px;
+    font-size: 200%;
+    text-align: center;
+}
+#hostRoom{
+    position: absolute;
+    top: 325px;
+    left: 250px;
+    width: 300px;
+    height: 100px;
+    font-size: 200%;
+}
+#joinRoomInput {
+    position: absolute;
+    top: 175px;
+    left: 250px;
+    width: 300px;
+    height: 100px;
+    font-size: 200%;
+    text-align: center;
+}
+#joinRoom{
+    position: absolute;
+    top: 325px;
+    left: 250px;
+    width: 300px;
+    height: 100px;
+    font-size: 200%;
+}
 p {
 	margin: 0;
 }

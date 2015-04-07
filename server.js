@@ -9,6 +9,15 @@ http = require('http');
 // List of all users
 var allpseudos = [];
 
+//List of all room names that keep track of number of players
+var rooms = {};
+
+//Map of clients - this tells us which players are in which room
+var clients = {};
+
+//Position of user in each room client
+var clientPlayers = {};
+
 // Set the parameters
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
@@ -33,13 +42,24 @@ function sendTime(){
 		timer['timer'] = 150;
 	io.sockets.emit('time', timer);
 	timer['timer']--;
-}
+};
 
+//Send time every second
 setInterval(sendTime,1000);
+
+//Helper function to see if room exists
+function roomExists(room) {
+	for (var i = Object.keys(rooms).length - 1; i >= 0; i--) {
+		if (Object.keys(rooms)[i] == room){
+			return true;
+		}
+	}
+	return false;
+};
 
 // Connection event
 io.sockets.on('connection', function (socket) {
-	console.log('a user connected');
+	console.log('user ' + socket.id + ' connected');
 	// SetPseudo event
 	socket.on('setPseudo', function (data) {
     	socket.pseudo = data;
@@ -55,9 +75,38 @@ io.sockets.on('connection', function (socket) {
     	console.log("user " + socket.pseudo + " sent to user " + message[1] + ": " + message[0]);
 	});
 
+	//Hosting a room
+	socket.on('host', function(roomName){
+		socket.join(roomName);
+		rooms[roomName] = 1;
+		clients[socket.id] = roomName;
+		clientPlayers[socket.id] = 0;
+		console.log("user " + socket.id + " has hosted room " + roomName);
+	});
+
+	//Joining a room
+	socket.on('join', function(roomName){
+		if (roomExists(roomName)){
+			if (rooms[roomName] == 4){
+				console.log("Game is full");
+			}
+			socket.join(roomName);
+			clients[socket.id] = roomName;
+			clientPlayers[socket.id] = rooms[roomName]++;
+			var data = {'id' : socket.id};
+			//io.to(roomName).emit('joined',data);
+			console.log("user " + socket.id + " has joined room " + roomName);
+			if (rooms[roomName] == 4){
+				io.to(roomName).emit('gameStart');
+			}
+		}
+		else{
+			console.log("Room " + roomName + " does not exist");
+		}
+	});
 
 	//Alerts when someone disconnects
 	socket.on('disconnect', function(){
-		console.log('a user disconnected');
+		console.log('user ' + socket.id + ' disconnected');
 	});
 });

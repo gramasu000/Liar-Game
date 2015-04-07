@@ -29,7 +29,7 @@ BasicGame.Game = function (game) {
     this.defend_buttons = {};
     this.attack_sprites = {};
     this.attack_buttons = {};
-    this.selftext = null
+    this.selftext = null;
 
 };
 
