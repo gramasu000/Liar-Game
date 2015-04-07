@@ -1,7 +1,15 @@
 BasicGame.WaitingRoom = function (game) {
 	
 	this.waitingRoomBackground = null;
+
 }
+
+var text;
+var numPlayersRemaining = 3;
+
+socket.on('playerCount',function(data){
+	numPlayersRemaining = data;
+});
 
 BasicGame.WaitingRoom.prototype = {
 
@@ -15,14 +23,15 @@ BasicGame.WaitingRoom.prototype = {
 
 		var style = { font: "60px Arial", fill: "#ff0044", align: "center" };
 
-    	var text = game.add.text(game.world.centerX, game.world.centerY, "Waiting for more players", style);
+    	text = game.add.text(game.world.centerX, game.world.centerY, 
+    		"Waiting for " + numPlayersRemaining + " more players", style);
 
     	text.anchor.set(0.5);
 
 	},
 
 	update: function () {
-
+		text.setText("Waiting for " + numPlayersRemaining + " more players");
 	}
 
 };

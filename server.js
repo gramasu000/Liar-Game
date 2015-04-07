@@ -98,8 +98,8 @@ io.sockets.on('connection', function (socket) {
 			socket.join(roomName);
 			clients[socket.id] = roomName;
 			clientPlayers[socket.id] = rooms[roomName]++;
-			var data = {'id' : socket.id};
-			//io.to(roomName).emit('joined',data);
+			var data = 4 - rooms[roomName];
+			io.to(roomName).emit('playerCount',data);
 			console.log("user " + socket.id + " has joined room " + roomName);
 			io.to(socket.id).emit('roomApproved',true);
 			if (rooms[roomName] == 4){
