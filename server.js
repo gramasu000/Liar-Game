@@ -106,5 +106,11 @@ io.sockets.on('connection', function (socket) {
 	//Alerts when someone disconnects
 	socket.on('disconnect', function(){
 		console.log('user ' + socket.id + ' disconnected');
+		rooms[clients[socket.id]]--;
+		if (rooms[clients[socket.id]] <= 0){
+			delete rooms[clients[socket.id]];
+		}
+		delete clients[socket.id];
+		delete clientPlayers[socket.id];
 	});
 });
