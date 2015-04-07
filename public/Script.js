@@ -41,7 +41,6 @@ function setPseudo() {
     {
         socket.emit('setPseudo', $("#pseudoInput").val());
         self = $("#pseudoInput").val();
-        allusers.push(self);
         $('#chatControls').show();
         $('#pseudoInput').hide();
         $('#pseudoSet').hide();
@@ -64,11 +63,16 @@ socket.on('message', function(data) {
 
 //Why data['time'] as opposed to data['timer'] is confusing me
 socket.on('time', function(data) {
-    console.log(data['timer']);
     var seconds = data['timer'] % 60;
     var minutes = Math.floor(data['timer'] / 60);
     var output = (seconds < 10)? (minutes + ":0" + seconds) : (minutes + ":" + seconds);
     $("#timer").empty().append(output);
+});
+
+socket.on('health', function(userhealth) {
+
+    game.health = userhealth[self];
+    console.log(game.health);
 });
 
 function onStart() {
