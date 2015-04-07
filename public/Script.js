@@ -54,6 +54,7 @@ function setPseudo() {
     }
 }
 
+//Hosting a room
 function hostRoom(){
     if ($("#hostRoomInput").val() != ""){
         socket.emit('host', $("#hostRoomInput").val());
@@ -63,6 +64,7 @@ function hostRoom(){
     }
 }
 
+//Joining a room
 function joinRoom(){
     if ($("#joinRoomInput").val() != ""){
         socket.emit('join', $("#joinRoomInput").val());

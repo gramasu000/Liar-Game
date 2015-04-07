@@ -6,9 +6,6 @@ app = express();
 // Create an HTTP object
 http = require('http');
 
-// List of all users
-var allpseudos = [];
-
 //List of all room names that keep track of number of players
 var rooms = {};
 
@@ -63,7 +60,6 @@ io.sockets.on('connection', function (socket) {
 	// SetPseudo event
 	socket.on('setPseudo', function (data) {
     	socket.pseudo = data['pseudo'];
-      	allpseudos.push(data['pseudo']);
       	io.to(clients[socket.id]).emit('setPseudo', data);
 
 	});
@@ -76,6 +72,7 @@ io.sockets.on('connection', function (socket) {
 	});
 
 	//Hosting a room
+	//NOTE: Need to implement error handling stuff
 	socket.on('host', function(roomName){
 		socket.join(roomName);
 		rooms[roomName] = 1;
@@ -85,6 +82,7 @@ io.sockets.on('connection', function (socket) {
 	});
 
 	//Joining a room
+	//NOTE: Need to implement error handling stuff
 	socket.on('join', function(roomName){
 		if (roomExists(roomName)){
 			if (rooms[roomName] == 4){
