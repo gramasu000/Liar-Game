@@ -98,8 +98,8 @@ socket.on('message', function(data) {
 
 socket.on('time', function(data) {
     //console.log(data['timer']);
-    var seconds = data['timer'] % 60;
-    var minutes = Math.floor(data['timer'] / 60);
+    var seconds = data % 60;
+    var minutes = Math.floor(data / 60);
     var output = (seconds < 10)? (minutes + ":0" + seconds) : (minutes + ":" + seconds);
     $("#timer").empty().append(output);
 });

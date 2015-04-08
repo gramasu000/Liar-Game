@@ -33,16 +33,27 @@ var io = require('socket.io').listen(server);
 server.listen(3000);
 
 //Send time to all players
-var timer = {'timer': 150};
+var timer = 150;
 function sendTime(){
 	if (timer == 0)
-		timer['timer'] = 150;
+		timer = 150;
 	io.sockets.emit('time', timer);
-	timer['timer']--;
+	timer--;
 };
 
 //Send time every second
 setInterval(sendTime,1000);
+
+function startCountdown(time,room){
+	var timeLeft = time;
+	countdown = setInterval(function(){
+		io.to(room).emit('countdownTimer',timeLeft);
+		timeLeft--;
+	},1000)
+	if (timeLeft <= 0){
+		clearInterval(countdown);
+	}
+}
 
 //Helper function to see if room exists
 function roomExists(room) {
@@ -57,11 +68,11 @@ function roomExists(room) {
 // Connection event
 io.sockets.on('connection', function (socket) {
 	console.log('user ' + socket.id + ' connected');
+	
 	// SetPseudo event
 	socket.on('setPseudo', function (data) {
     	socket.pseudo = data['pseudo'];
       	io.to(clients[socket.id]).emit('setPseudo', data);
-
 	});
 
 	// Obtaining a sent message event
@@ -91,7 +102,7 @@ io.sockets.on('connection', function (socket) {
 	//Joining a room
 	//NOTE: Need to implement error handling stuff
 	socket.on('join', function(roomName){
-		if (roomExists(roomName)){
+		if (roomExists(roomName) && rooms[roomName] < 4){
 			if (rooms[roomName] == 4){
 				console.log("Game is full");
 			}
@@ -103,8 +114,12 @@ io.sockets.on('connection', function (socket) {
 			console.log("user " + socket.id + " has joined room " + roomName);
 			io.to(socket.id).emit('roomApproved',true);
 			if (rooms[roomName] == 4){
-				io.to(roomName).emit('gameStart',roomName);
+				startCountdown(10,roomName);
 			}
+		}
+		else if (rooms[roomName] >= 4){
+			console.log("Room " + roomName + " is full");
+			io.to(socket.id).emit('roomApproved',false);
 		}
 		else{
 			console.log("Room " + roomName + " does not exist");
