@@ -1,6 +1,7 @@
 BasicGame.JoinRoom = function (game) {
 	
 	this.joinRoomBackground = null;
+	this.backButton = null;
 	this.roomButtons = [];
 }
 
@@ -74,6 +75,8 @@ BasicGame.JoinRoom.prototype = {
 		this.joinRoomBackground = this.add.sprite(0,0,'gameBackground');
         this.joinRoomBackground.width = 800;
         this.joinRoomBackground.height = 600;
+
+        this.backButton = this.add.button(30,500,'backButton',this.backToMainMenu,this);
       
         for (var i = 20; i <= 380; i += 90) {
         	this.roomButtons.push(new RoomButton(this,10,i,'roomButton',''));
@@ -105,5 +108,11 @@ BasicGame.JoinRoom.prototype = {
 		socket.emit('join',button.actualName);
 		$('#joinRoomInput').hide();
         $('#joinRoom').hide();
+	},
+
+	backToMainMenu: function(){
+		$('#joinRoomInput').hide();
+        $('#joinRoom').hide();
+		this.state.start('MainMenu');
 	}
 };
