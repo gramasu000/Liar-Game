@@ -15,6 +15,10 @@ var clients = {};
 //Position of user in each room client
 var clientPlayers = {};
 
+// Health Values
+var health = {0: 100, 1:100, 2:100, 3:100 };
+var actions = {};
+
 // Set the parameters
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
@@ -38,8 +42,9 @@ function sendTime(){
 	if (timer == 0)
 		timer = 150;
 	io.sockets.emit('time', timer);
-	timer--;
-};
+	if (timer > 0)
+		timer--;
+}
 
 //Send time every second
 setInterval(sendTime,1000);
@@ -135,6 +140,128 @@ io.sockets.on('connection', function (socket) {
 			io.to(socket.id).emit('roomApproved',false);
 		}
 	});
+
+	// Obtaining actions a player has taken
+	socket.on('actions', function(data) {
+
+		var i;
+		for (i = 0; i < allpseudos.length; i++) {
+			if (allpseudos[i] == socket.pseudo) {
+				break; 
+			}
+		} 
+		actions[i] = data;
+		console.log('User ' + socket.pseudo  + "," + i + ' submitted actions. ' + Object.keys(actions).length);
+
+		if (Object.keys(actions).length == 4)
+		{
+
+			for (var j = 0; j < allpseudos.length; j++)
+			{
+				var init_decrease = 0;
+				for (var k = 0; k < 6; k++)
+				{
+					if (actions[j][k])
+					{
+						init_decrease++;
+					}
+				}
+				health[j] = health[j] - init_decrease;
+
+				console.log(init_decrease);
+
+				if (health[j] < 0)
+					health[j] = 0;
+			}
+
+			// Enumerate 12 possibilities
+
+			// If #0 attacked #1 and #1 did not defend and #0 is still alive after init_decrease
+			if (actions[0][0] && !actions[1][1] && (health[0] > 0))
+			{
+				console.log("0 attacks 1");
+				health[1] = health[1] - 3;
+			}
+			// If #1 attacked #0 and #0 did not defend and #1 is still alive after init_decrease
+			if (actions[1][0] && !actions[0][1] && (health[1] > 0))
+			{
+				console.log("1 attacks 0");
+				health[0] = health[0] - 3;
+			}
+			// If #0 attacked #2 and #2 did not defend and #0 is still alive after init_decrease
+			if (actions[0][2] && !actions[2][1] && (health[0] > 0))
+			{
+				console.log("0 attacks 2");
+				health[2] = health[2] - 3;
+			}
+			// If #2 attacked #0 and #0 did not defend and #2 is still alive after init_decrease
+			if (actions[2][0] && !actions[0][3] && (health[2] > 0))
+			{
+				console.log("2 attacks 0");
+				health[0] = health[0] - 3;
+			}
+			//If #0 attacked #3 and #3 did not defend and #0 is still alive after init_decrease
+			if (actions[0][4] && !actions[3][1] && (health[0] > 0))
+			{
+				console.log("0 attacks 3");
+				health[3] = health[3] - 3;
+			}
+			// If #3 attacked #0 and #0 did not defend and #3 is still alive after init_decrease
+			if (actions[3][0] && !actions[0][5] && (health[3] > 0))
+			{
+				console.log("3 attacks 0");
+				health[0] = health[0] - 3;
+			}
+			// If #1 attacked #2 and #2 did not defend and #1 is still alive after init_decrease
+			if (actions[1][2] && !actions[2][3] && (health[1] > 0))
+			{
+				console.log("1 attacks 2");
+				health[2] = health[2] - 3;
+			}
+			// If #2 attacked #1 and #1 did not defend and #2 is still alive after init_decrease
+			if (actions[2][2] && !actions[1][3] && (health[2] > 0))
+			{
+				console.log("2 attacks 1");
+				health[1] = health[1] - 3;
+			}
+			// If #1 attacked #3 and #3 did not defend and #1 is still alive after init_decrease
+			if (actions[1][4] && !actions[3][3] && (health[1] > 0))
+			{
+				console.log("1 attacks 3");
+				health[3] = health[3] - 3;
+			}
+			// If #3 attacked #1 and #1 did not defend and #3 is still alive after init_decrease
+			if (actions[3][2] && !actions[1][5] && (health[3] > 0))
+			{
+				console.log("3 attacks 1");
+				health[1] = health[1] - 3;
+			}
+			// If #2 attacked #3 and #3 did not defend and #2 is still alive after init_decrease
+			if (actions[2][4] && !actions[3][5] && (health[2] > 0))
+			{
+				console.log("2 attacks 3");
+				health[3] = health[3] - 3;
+			}
+			// If #3 attacked #2 and #2 did not defend and #3 is still alive after init_decrease
+			if (actions[3][4] && !actions[2][5] && (health[3] > 0))
+			{
+				console.log("3 attacks 2");
+				health[2] = health[2] - 3;
+			}
+
+			var userhealth = {}
+
+			for (var count = 0; count < allpseudos.length; count++)
+			{
+				userhealth[allpseudos[count]] = health[count];
+			}
+
+			socket.broadcast.emit('health', userhealth);
+			socket.emit('health', userhealth);
+
+		}
+
+	}); 
 
 	//Alerts when someone disconnects
 	socket.on('disconnect', function(){

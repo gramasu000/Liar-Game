@@ -28,8 +28,6 @@ function sentMessage() {
         if (recipient != self)
         {
             var messagerecip = [$('#messageInput').val(), recipient]
-            //socket.emit('recipient', document.getElementById("recipient").value);
-            //console.log(document.getElementById("recipient").value);
             socket.emit('message', messagerecip);
             addMessage($('#messageInput').val(), self + " to " + recipient, new Date().toISOString(), true);
             $('#messageInput').val('');
@@ -97,11 +95,16 @@ socket.on('message', function(data) {
 });
 
 socket.on('time', function(data) {
-    //console.log(data['timer']);
     var seconds = data % 60;
     var minutes = Math.floor(data / 60);
     var output = (seconds < 10)? (minutes + ":0" + seconds) : (minutes + ":" + seconds);
     $("#timer").empty().append(output);
+});
+
+socket.on('health', function(userhealth) {
+
+    game.health = userhealth[self];
+    console.log(game.health);
 });
 
 function onStart() {

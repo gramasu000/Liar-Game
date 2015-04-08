@@ -41,6 +41,7 @@ BasicGame.Preloader.prototype = {
 		this.load.image('kingdom','assets/kingdom.gif');
 		this.load.image('defend', 'assets/defend.png');
 		this.load.image('attack','assets/attack.png');
+		this.load.image('submit', 'assets/submit.png');
 
 	},
 
