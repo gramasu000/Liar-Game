@@ -69,6 +69,8 @@ function roomExists(room) {
 io.sockets.on('connection', function (socket) {
 	console.log('user ' + socket.id + ' connected');
 	
+	io.to(socket.id).emit('initializeRoomButtons',rooms);
+
 	// SetPseudo event
 	socket.on('setPseudo', function (data) {
     	socket.pseudo = data['pseudo'];
@@ -85,17 +87,23 @@ io.sockets.on('connection', function (socket) {
 	//Hosting a room
 	//NOTE: Need to implement error handling stuff
 	socket.on('host', function(roomName){
+		console.log(Object.keys(rooms));
 		if (roomExists(roomName)){
 			io.to(socket.id).emit('roomApproved',false);
 			console.log("Room with same name already exists!");
 		}
-		else{
+		else if (Object.keys(rooms).length < 8) {
 			socket.join(roomName);
 			rooms[roomName] = 1;
 			clients[socket.id] = roomName;
 			clientPlayers[socket.id] = 0;
 			console.log("user " + socket.id + " has hosted room " + roomName);
+			socket.broadcast.emit('createRoomButton',roomName);
 			io.to(socket.id).emit('roomApproved',true);
+		}
+		else{
+			io.to(socket.id).emit('roomApproved',false);
+			console.log("Too many rooms currently active");
 		}
 	});
 
@@ -111,6 +119,7 @@ io.sockets.on('connection', function (socket) {
 			clientPlayers[socket.id] = rooms[roomName]++;
 			var data = 4 - rooms[roomName];
 			io.to(roomName).emit('playerCount',data);
+			socket.broadcast.emit('updateRoomButtons',roomName);
 			console.log("user " + socket.id + " has joined room " + roomName);
 			io.to(socket.id).emit('roomApproved',true);
 			if (rooms[roomName] == 4){
