@@ -18,12 +18,16 @@ socket.on('createRoomButton',function(name){
 	}
 });
 
-socket.on('updateRoomButtons',function(rooms){
+socket.on('initializeRoomButtons',function(rooms){
 	for (var i = 0; i < Object.keys(rooms).length; i++) {
 		var name = Object.keys(rooms)[i];
 		listOfGames[i] = name;
 		numPlayerInGame[name] = rooms[name];
 	};
+});
+
+socket.on('updateRoomButtons',function(name){
+	numPlayerInGame[name]++;
 });
 
 var RoomButton = function(game, x, y, key, name, callback, callbackContext)

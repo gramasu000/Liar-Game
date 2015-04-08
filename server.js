@@ -69,7 +69,7 @@ function roomExists(room) {
 io.sockets.on('connection', function (socket) {
 	console.log('user ' + socket.id + ' connected');
 	
-	io.to(socket.id).emit('updateRoomButtons',rooms);
+	io.to(socket.id).emit('initializeRoomButtons',rooms);
 
 	// SetPseudo event
 	socket.on('setPseudo', function (data) {
@@ -92,7 +92,7 @@ io.sockets.on('connection', function (socket) {
 			io.to(socket.id).emit('roomApproved',false);
 			console.log("Room with same name already exists!");
 		}
-		else if (Object.keys(rooms) < 8) {
+		else if (Object.keys(rooms).length < 8) {
 			socket.join(roomName);
 			rooms[roomName] = 1;
 			clients[socket.id] = roomName;
@@ -119,6 +119,7 @@ io.sockets.on('connection', function (socket) {
 			clientPlayers[socket.id] = rooms[roomName]++;
 			var data = 4 - rooms[roomName];
 			io.to(roomName).emit('playerCount',data);
+			socket.broadcast.emit('updateRoomButtons',roomName);
 			console.log("user " + socket.id + " has joined room " + roomName);
 			io.to(socket.id).emit('roomApproved',true);
 			if (rooms[roomName] == 4){
