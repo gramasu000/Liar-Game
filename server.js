@@ -69,6 +69,8 @@ function roomExists(room) {
 io.sockets.on('connection', function (socket) {
 	console.log('user ' + socket.id + ' connected');
 	
+	io.to(socket.id).emit('updateRoomButtons',rooms);
+
 	// SetPseudo event
 	socket.on('setPseudo', function (data) {
     	socket.pseudo = data['pseudo'];
