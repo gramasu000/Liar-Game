@@ -136,25 +136,27 @@ BasicGame.Game.prototype = {
 
 
         // Defend BUTTONS for YOUR kingdom
-        this.defend_buttons[0] = this.add.button(400,450,'defend',this.defend0, this, 'buttonOver', 'buttonOut', 'buttonOver');
+        this.defend_buttons[0] = this.add.button(260,510,'defend',this.defend0, this, 'buttonOver', 'buttonOut', 'buttonOver');
         this.defend_buttons[0].anchor = new Phaser.Point(0.5,0.5);
         this.defend_buttons[0].width = 100;
         this.defend_buttons[0].height = 20;
+        this.defend_buttons[0].rotation = 2.23
         this.defend_buttons[0].tint = 0x794044;
 
-        this.defend_buttons[1] = this.add.button(540,510,'defend',this.defend1, this, 'buttonOver', 'buttonOut', 'buttonOver');
+        this.defend_buttons[1] = this.add.button(400,450,'defend',this.defend1, this, 'buttonOver', 'buttonOut', 'buttonOver');
         this.defend_buttons[1].anchor = new Phaser.Point(0.5,0.5);
         this.defend_buttons[1].width = 100;
         this.defend_buttons[1].height = 20;
-        this.defend_buttons[1].rotation = Math.PI - 2.23
         this.defend_buttons[1].tint = 0x794044;
-        
-        this.defend_buttons[2] = this.add.button(260,510,'defend',this.defend2, this, 'buttonOver', 'buttonOut', 'buttonOver');
+
+        this.defend_buttons[2] = this.add.button(540,510,'defend',this.defend2, this, 'buttonOver', 'buttonOut', 'buttonOver');
         this.defend_buttons[2].anchor = new Phaser.Point(0.5,0.5);
         this.defend_buttons[2].width = 100;
         this.defend_buttons[2].height = 20;
-        this.defend_buttons[2].rotation = 2.23
+        this.defend_buttons[2].rotation = Math.PI - 2.23
         this.defend_buttons[2].tint = 0x794044;
+        
+
 
         // Attack sprites for other kingdoms
         this.attack_sprites[0] = this.add.sprite(200, 300, 'attack');
@@ -211,25 +213,26 @@ BasicGame.Game.prototype = {
         this.attack_sprites[8].rotation = 2.35
 
         // Attack buttons for your kingdom
-        this.attack_buttons[0] = this.add.button(400, 380, 'attack', this.attack0, this);
+        this.attack_buttons[0] = this.add.button(225, 485, 'attack', this.attack0, this);
         this.attack_buttons[0].anchor = new Phaser.Point(0.5, 0.5);
-        this.attack_buttons[0].width = 100;
+        this.attack_buttons[0].width = 50;
         this.attack_buttons[0].height = 100;
-        this.attack_buttons[0].rotation = 3*Math.PI / 2;
+        this.attack_buttons[0].rotation = 2*Math.PI - 2.5;
         this.attack_buttons[0].tint = 0x794044;
 
-        this.attack_buttons[1] = this.add.button(575, 485, 'attack', this.attack1, this);
+
+        this.attack_buttons[1] = this.add.button(400, 380, 'attack', this.attack1, this);
         this.attack_buttons[1].anchor = new Phaser.Point(0.5, 0.5);
-        this.attack_buttons[1].width = 50;
+        this.attack_buttons[1].width = 100;
         this.attack_buttons[1].height = 100;
-        this.attack_buttons[1].rotation = 2.5 + Math.PI;
+        this.attack_buttons[1].rotation = 3*Math.PI / 2;
         this.attack_buttons[1].tint = 0x794044;
 
-        this.attack_buttons[2] = this.add.button(225, 485, 'attack', this.attack2, this);
+        this.attack_buttons[2] = this.add.button(575, 485, 'attack', this.attack2, this);
         this.attack_buttons[2].anchor = new Phaser.Point(0.5, 0.5);
         this.attack_buttons[2].width = 50;
         this.attack_buttons[2].height = 100;
-        this.attack_buttons[2].rotation = 2*Math.PI - 2.5;
+        this.attack_buttons[2].rotation = 2.5 + Math.PI;
         this.attack_buttons[2].tint = 0x794044;
 
         // Submit Button
