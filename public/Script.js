@@ -18,9 +18,10 @@ function sentMessage() {
         var recipient = self;
         for (var i = 0; i < allusers.length; i++)
         {
+            console.log(allusers[i]);
             if (document.getElementById(allusers[i]).checked)
             {
-                recipient = allusers[i]
+                recipient = allusers[i];
             }
         }
 
@@ -28,7 +29,7 @@ function sentMessage() {
         {
             var messagerecip = [$('#messageInput').val(), recipient]
             socket.emit('message', messagerecip);
-            addMessage($('#messageInput').val(), "Me", new Date().toISOString(), true);
+            addMessage($('#messageInput').val(), self + " to " + recipient, new Date().toISOString(), true);
             $('#messageInput').val('');
             
         }
@@ -39,8 +40,10 @@ function sentMessage() {
 function setPseudo() {
     if ($("#pseudoInput").val() != "")
     {
-        socket.emit('setPseudo', $("#pseudoInput").val());
         self = $("#pseudoInput").val();
+        var data = {'pseudo' : self};
+        socket.emit('setPseudo', data);
+        
         $('#chatControls').show();
         $('#pseudoInput').hide();
         $('#pseudoSet').hide();
@@ -49,9 +52,39 @@ function setPseudo() {
     }
 }
 
+//Hosting a room
+function hostRoom(){
+    if ($("#hostRoomInput").val() != ""){
+        socket.emit('host', $("#hostRoomInput").val());
+        $('#hostRoomInput').hide();
+        $('#hostRoom').hide();
+    }
+}
+
+//Joining a room
+function joinRoom(){
+    if ($("#joinRoomInput").val() != ""){
+        socket.emit('join', $("#joinRoomInput").val());
+        $('#joinRoomInput').hide();
+        $('#joinRoom').hide();
+    }
+}
+
+socket.on('roomApproved',function(data){
+    if (data == true){
+        game.state.start("WaitingRoom");
+    }
+    else
+        game.state.start("MainMenu");
+})
+
+socket.on('gameStart', function(data){
+    game.state.start("SetPseudo");
+});
+
 socket.on('setPseudo', function(data) {
-    allusers.push(data);
-    $("#otheruser").append('<div><input type="radio" id="'+ data + '" name="recipient" value="'+ data +'">' + data + '</div>');
+    allusers.push(data['pseudo']);
+    $("#otheruser").append('<div><input type="radio" id="'+ data['pseudo'] + '" name="recipient" value="'+ data['pseudo'] +'">' + data['pseudo'] + '</div>');    
 });
 
 socket.on('message', function(data) {
@@ -61,10 +94,9 @@ socket.on('message', function(data) {
     }
 });
 
-//Why data['time'] as opposed to data['timer'] is confusing me
 socket.on('time', function(data) {
-    var seconds = data['timer'] % 60;
-    var minutes = Math.floor(data['timer'] / 60);
+    var seconds = data % 60;
+    var minutes = Math.floor(data / 60);
     var output = (seconds < 10)? (minutes + ":0" + seconds) : (minutes + ":" + seconds);
     $("#timer").empty().append(output);
 });
@@ -78,14 +110,25 @@ socket.on('health', function(userhealth) {
 function onStart() {
     $("#chatControls").hide();
     $(".pseudo").hide();
+    $(".hRoom").hide();
+    $(".jRoom").hide();
     $("#pseudoSet").click(function() {setPseudo()});
     $("#pseudoInput").keypress(function(e) { 
         if(e.which == 13)
             setPseudo()});
-    $("#submit").click(function() {sentMessage();});
+    $("#hostRoom").click(function() {hostRoom()});
+    $("#hostRoomInput").keypress(function(e) { 
+        if(e.which == 13)
+            hostRoom()});
+    $("#joinRoom").click(function() {joinRoom()});
+    $("#joinRoomInput").keypress(function(e) { 
+        if(e.which == 13)
+            joinRoom()});
+    $("#submit").click(function() {sentMessage()});
     $("#messageInput").keypress(function(e) {
         if(e.which == 13)
             sentMessage(); });
+
 }
 
 $(document).ready(onStart);

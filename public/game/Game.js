@@ -34,14 +34,18 @@ BasicGame.Game = function (game) {
     
     this.attack_sprites = {};
     this.attack_buttons = {};
+
     this.attack_booleans = {0: false, 1: false, 2:false };
     
     this.submit_button = null;
     this.submit_boolean = false; 
 
     this.health = 100;
-
 };
+
+socket.on('health',function(){
+
+});
 
 BasicGame.Game.prototype = {
 
@@ -376,7 +380,8 @@ BasicGame.Game.prototype = {
 
         this.submit_boolean = true;
 
-        var actions = { 0: this.attack_booleans[0], 
+        var actions = { 'id' : socket.id,
+                        0: this.attack_booleans[0], 
                         1: this.defend_booleans[0], 
                         2: this.attack_booleans[1], 
                         3: this.defend_booleans[1], 

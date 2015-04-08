@@ -28,7 +28,10 @@ BasicGame.Preloader.prototype = {
 
 		// Assets for the Main Menu State
 		this.load.image('titlepage', 'assets/exampleBackground.jpg');
-		this.load.image('playButton', 'assets/playButton.png');
+		this.load.image('hostGameButton', 'assets/hostGame.png');
+		this.load.image('joinGameButton', 'assets/joinGame.png');
+		this.load.image('roomButton', 'assets/roomButton.png');
+		this.load.image('backButton', 'assets/backButton.png');
 		this.load.audio('titleMusic', 'assets/mainMenu.mp3');
 
 		// Assets for the Set Pseudo State
