@@ -54,20 +54,20 @@ div#chatEntries {
 }
 #joinRoomInput {
     position: absolute;
-    top: 175px;
-    left: 250px;
-    width: 300px;
-    height: 100px;
-    font-size: 200%;
+    top: 500px;
+    left: 590px;
+    width: 195px;
+    height: 30px;
+    font-size: 100%;
     text-align: center;
 }
 #joinRoom{
     position: absolute;
-    top: 325px;
-    left: 250px;
-    width: 300px;
-    height: 100px;
-    font-size: 200%;
+    top: 550px;
+    left: 590px;
+    width: 200px;
+    height: 50px;
+    font-size: 100%;
 }
 p {
 	margin: 0;
