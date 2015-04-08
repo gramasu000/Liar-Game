@@ -17,7 +17,7 @@ socket.on('playerCount',function(data){
 
 socket.on('countdownTimer',function(data){
 	timer = data;
-	if (timer <= 0){
+	if (timer == 0){
 		game.state.start('SetPseudo');
 	}
 })

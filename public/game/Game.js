@@ -43,6 +43,10 @@ BasicGame.Game = function (game) {
     this.health = 100;
 };
 
+socket.on('health',function(){
+
+});
+
 BasicGame.Game.prototype = {
 
     create: function () {
@@ -376,7 +380,8 @@ BasicGame.Game.prototype = {
 
         this.submit_boolean = true;
 
-        var actions = { 0: this.attack_booleans[0], 
+        var actions = { 'id' : socket.id,
+                        0: this.attack_booleans[0], 
                         1: this.defend_booleans[0], 
                         2: this.attack_booleans[1], 
                         3: this.defend_booleans[1], 
