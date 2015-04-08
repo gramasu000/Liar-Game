@@ -2,7 +2,8 @@
 BasicGame.MainMenu = function (game) {
 
 	this.music = null;
-	this.playButton = null;
+	this.hostGameButton = null;
+	this.joinGameButton = null;
 
 };
 
@@ -21,9 +22,13 @@ BasicGame.MainMenu.prototype = {
 		this.titlePage.width = 800;
 		this.titlePage.height = 650;
 
-		this.playButton = this.add.button(300, 400, 'playButton', this.startGame, this, 'buttonOver', 'buttonOut', 'buttonOver');
-        this.playButton.width = 200;
-        this.playButton.height = 100;
+		this.hostGameButton = this.add.button(328, 405, 'hostGameButton', this.hostGame, this, 'buttonOver', 'buttonOut', 'buttonOver');
+        this.hostGameButton.width = 144;
+        this.hostGameButton.height = 40;
+
+        this.joinGameButton = this.add.button(328, 446, 'joinGameButton', this.joinGame, this, 'buttonOver', 'buttonOut', 'buttonOver');
+        this.joinGameButton.width = 144;
+        this.joinGameButton.height = 40;
 	},
 
 	update: function () {
@@ -32,13 +37,21 @@ BasicGame.MainMenu.prototype = {
 
 	},
 
-	startGame: function (pointer) {
+	hostGame: function (pointer) {
 
 		//	Ok, the Play Button has been clicked or touched, so let's stop the music (otherwise it'll carry on playing)
 		this.music.stop();
-
 		//	And start the actual game
-		this.state.start('SetPseudo');
+		this.state.start('HostRoom');
+
+	},
+
+	joinGame: function (pointer) {
+
+		//	Ok, the Play Button has been clicked or touched, so let's stop the music (otherwise it'll carry on playing)
+		this.music.stop();
+		//	And start the actual game
+		this.state.start('JoinRoom');
 
 	}
 

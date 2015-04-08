@@ -34,13 +34,13 @@ BasicGame.Game = function (game) {
     
     this.attack_sprites = {};
     this.attack_buttons = {};
+
     this.attack_booleans = {0: false, 1: false, 2:false };
     
     this.submit_button = null;
     this.submit_boolean = false; 
 
     this.health = 100;
-
 };
 
 BasicGame.Game.prototype = {
