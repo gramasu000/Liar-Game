@@ -51,7 +51,7 @@ BasicGame.MainMenu.prototype = {
 		//	Ok, the Play Button has been clicked or touched, so let's stop the music (otherwise it'll carry on playing)
 		this.music.stop();
 
-		//Initialize
+		//Initialize rooms
 		socket.emit('initializeRooms',null);
 
 		//	And go to the room list

@@ -71,8 +71,8 @@ function joinRoom(){
 }
 
 socket.on('roomApproved',function(data){
-    if (data == true){
-        game.state.start("WaitingRoom");
+    if (data['approved'] == true){
+        game.state.start("WaitingRoom", false, false, data['name']);
     }
     else
         game.state.start("MainMenu");

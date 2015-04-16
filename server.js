@@ -104,9 +104,8 @@ io.sockets.on('connection', function (socket) {
 	//Hosting a room
 	//NOTE: Need to implement error handling stuff
 	socket.on('host', function(roomName){
-		console.log(Object.keys(rooms));
 		if (roomExists(roomName)){
-			io.to(socket.id).emit('roomApproved',false);
+			io.to(socket.id).emit('roomApproved',{'approved' : false, 'name' : roomName});
 			console.log("Room with same name already exists!");
 		}
 		else if (Object.keys(rooms).length < 10) {
@@ -118,10 +117,10 @@ io.sockets.on('connection', function (socket) {
 			socketIDs[roomName][0] = socket.id;
 			console.log("user " + socket.id + " has hosted room " + roomName);
 			socket.broadcast.emit('createRoomButton',roomName);
-			io.to(socket.id).emit('roomApproved',true);
+			io.to(socket.id).emit('roomApproved',{'approved' : true, 'name' : roomName});
 		}
 		else{
-			io.to(socket.id).emit('roomApproved',false);
+			io.to(socket.id).emit('roomApproved',{'approved' : false, 'name' : roomName});
 			console.log("Too many rooms currently active");
 		}
 	});
@@ -141,7 +140,7 @@ io.sockets.on('connection', function (socket) {
 			io.to(roomName).emit('playerCount',data);
 			socket.broadcast.emit('updateRoomButtons',{'name' : roomName, 'increase' : true});
 			console.log("user " + socket.id + " has joined room " + roomName);
-			io.to(socket.id).emit('roomApproved',true);
+			io.to(socket.id).emit('roomApproved',{'approved' : true, 'name' : roomName});
 			if (rooms[roomName] == 4){
 				startCountdown(10,roomName);
 			}
@@ -153,6 +152,21 @@ io.sockets.on('connection', function (socket) {
 		else{
 			console.log("Room " + roomName + " does not exist");
 			io.to(socket.id).emit('roomApproved',false);
+		}
+	});
+
+	socket.on('exitRoom',function(roomName){
+		console.log("user " + socket.id + " has exited room " + roomName);
+		socket.leave(roomName);
+		socket.broadcast.emit('updateRoomButtons',{'increase' : false, 'name' : roomName});
+		rooms[roomName]--;
+		var data = 4 - rooms[roomName];
+		io.to(roomName).emit('playerCount',data);
+		if (rooms[roomName] <= 0){
+			delete rooms[roomName];
+			delete socketIDs[roomName];
+			delete clients[roomName];
+			delete clientPlayers[roomName];
 		}
 	});
 

@@ -20,13 +20,11 @@ socket.on('createRoomButton',function(name){
 });
 
 socket.on('initializeRoomButtons',function(rooms){
-	console.log('Received initialize room buttons');
 	for (var i = 0; i < Object.keys(rooms).length; i++) {
 		var name = Object.keys(rooms)[i];
 		listOfGames[i] = name;
 		numPlayerInGame[name] = rooms[name];
 	};
-	console.log(listOfGames);
 });
 
 socket.on('updateRoomButtons',function(data){
@@ -35,6 +33,15 @@ socket.on('updateRoomButtons',function(data){
 	}
 	else if (data['increase'] == false){
 		numPlayerInGame[data['name']]--;
+		if (numPlayerInGame[data['name']] <= 0){
+			for (var i = 0; i < listOfGames.length; i++) {
+				if (listOfGames[i] == data['name']){
+					listOfGames[i] = '';
+					delete numPlayerInGame[name];
+					break;
+				}
+			}
+		}
 	}
 });
 
