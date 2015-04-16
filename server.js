@@ -63,6 +63,7 @@ function startCountdown(time,room){
 	},1000)
 	if (timeLeft <= 0){
 		clearInterval(countdown);
+		console.log("Game in room " + room + " has started!");
 	}
 }
 
@@ -80,7 +81,10 @@ function roomExists(room) {
 io.sockets.on('connection', function (socket) {
 	console.log('user ' + socket.id + ' connected');
 	
-	io.to(socket.id).emit('initializeRoomButtons',rooms);
+	//Initialize room buttons every time someone requests to join game
+	socket.on('initializeRooms', function(){
+		io.to(socket.id).emit('initializeRoomButtons',rooms);
+	});
 
 	// SetPseudo event
 	socket.on('setPseudo', function (data) {
@@ -105,7 +109,7 @@ io.sockets.on('connection', function (socket) {
 			io.to(socket.id).emit('roomApproved',false);
 			console.log("Room with same name already exists!");
 		}
-		else if (Object.keys(rooms).length < 8) {
+		else if (Object.keys(rooms).length < 10) {
 			socket.join(roomName);
 			rooms[roomName] = 1;
 			clients[socket.id] = roomName;
@@ -135,7 +139,7 @@ io.sockets.on('connection', function (socket) {
 			socketIDs[roomName][clientPlayers[socket.id]] = socket.id;
 			var data = 4 - rooms[roomName];
 			io.to(roomName).emit('playerCount',data);
-			socket.broadcast.emit('updateRoomButtons',roomName);
+			socket.broadcast.emit('updateRoomButtons',{'name' : roomName, 'increase' : true});
 			console.log("user " + socket.id + " has joined room " + roomName);
 			io.to(socket.id).emit('roomApproved',true);
 			if (rooms[roomName] == 4){
@@ -161,7 +165,6 @@ io.sockets.on('connection', function (socket) {
 			actions[roomName] = [];
 		}
 		actions[roomName][i] = data;
-		console.log(actions[roomName][i]);
 		console.log('User ' + socket.pseudo  + "," + i + ' submitted actions. ' + (actions[roomName].length-1));
 
 		if (actions[roomName].length == 4)

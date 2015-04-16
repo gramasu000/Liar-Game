@@ -20,15 +20,22 @@ socket.on('createRoomButton',function(name){
 });
 
 socket.on('initializeRoomButtons',function(rooms){
+	console.log('Received initialize room buttons');
 	for (var i = 0; i < Object.keys(rooms).length; i++) {
 		var name = Object.keys(rooms)[i];
 		listOfGames[i] = name;
 		numPlayerInGame[name] = rooms[name];
 	};
+	console.log(listOfGames);
 });
 
-socket.on('updateRoomButtons',function(name){
-	numPlayerInGame[name]++;
+socket.on('updateRoomButtons',function(data){
+	if (data['increase'] == true){
+		numPlayerInGame[data['name']]++;
+	}
+	else if (data['increase'] == false){
+		numPlayerInGame[data['name']]--;
+	}
 });
 
 var RoomButton = function(game, x, y, key, name, callback, callbackContext)
@@ -42,7 +49,7 @@ var RoomButton = function(game, x, y, key, name, callback, callbackContext)
 
     this.actualName = name;
     this.roomName = new Phaser.Text(game, 0, 0, 'Room Name: ' + name, this.style);
-    this.numPlayer = new Phaser.Text(game, 0, 0, 'Number of Players: 1/4', this.style);
+    this.numPlayer = new Phaser.Text(game, 0, 0, 'Number of Players: 0/4', this.style);
 
     //puts the label in the center of the button
     this.roomName.anchor.setTo( -0.075 , 0 );
@@ -72,6 +79,7 @@ RoomButton.prototype.setPlayerNumber = function( num ) {
 BasicGame.JoinRoom.prototype = {
 
 	preload: function () {
+		this.roomButtons = [];
 		this.joinRoomBackground = this.add.sprite(0,0,'gameBackground');
         this.joinRoomBackground.width = 800;
         this.joinRoomBackground.height = 600;

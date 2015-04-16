@@ -41,7 +41,7 @@ BasicGame.MainMenu.prototype = {
 
 		//	Ok, the Play Button has been clicked or touched, so let's stop the music (otherwise it'll carry on playing)
 		this.music.stop();
-		//	And start the actual game
+		//	And let player host a game room
 		this.state.start('HostRoom');
 
 	},
@@ -50,9 +50,12 @@ BasicGame.MainMenu.prototype = {
 
 		//	Ok, the Play Button has been clicked or touched, so let's stop the music (otherwise it'll carry on playing)
 		this.music.stop();
-		//	And start the actual game
-		this.state.start('JoinRoom');
 
+		//Initialize
+		socket.emit('initializeRooms',null);
+
+		//	And go to the room list
+		this.state.start('JoinRoom');
 	}
 
 };
