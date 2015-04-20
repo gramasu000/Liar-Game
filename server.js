@@ -21,6 +21,9 @@ var socketIDs = {};
 //Map from socket IDs to pseudo names
 var IDtoPseudo = {};
 
+// Who among all players set pseudo
+var who_set_pseudo = {};
+
 // Health Values
 var health = {};
 var actions = {};
@@ -43,17 +46,27 @@ var io = require('socket.io').listen(server);
 server.listen(3000);
 
 //Send time to all players
-var timer = 150;
-function sendTime(){
-	if (timer == 0)
-		timer = 150;
-	io.sockets.emit('time', timer);
-	if (timer > 0)
-		timer--;
-}
-
+//var timer = 150;
+//function sendTime(){
+//	if (timer == 0)
+//		timer = 150;
+//	io.sockets.emit('time', timer);
+//	if (timer > 0)
+//		timer--;
+//}
 //Send time every second
-setInterval(sendTime,1000);
+//setInterval(sendTime,1000);
+
+function GameCountDown(time, room) {
+	var timeLeft = time;
+	countdown = setInterval(function(){
+		io.to(room).emit('Gamecountdown', timeLeft);
+		timeLeft--;
+	},1000)
+	if (timeLeft <= 0){
+		clearInterval(countdown);
+	}
+}
 
 function startCountdown(time,room){
 	var timeLeft = time;
@@ -115,6 +128,7 @@ io.sockets.on('connection', function (socket) {
 			clientPlayers[socket.id] = 0;
 			socketIDs[roomName] = [];
 			socketIDs[roomName][0] = socket.id;
+			who_set_pseudo[roomName] = [false, false, false, false];
 			console.log("user " + socket.id + " has hosted room " + roomName);
 			socket.broadcast.emit('createRoomButton',roomName);
 			io.to(socket.id).emit('roomApproved',{'approved' : true, 'name' : roomName});
@@ -140,10 +154,13 @@ io.sockets.on('connection', function (socket) {
 			io.to(roomName).emit('playerCount',data);
 			socket.broadcast.emit('updateRoomButtons',{'name' : roomName, 'increase' : true});
 			console.log("user " + socket.id + " has joined room " + roomName);
+
 			io.to(socket.id).emit('roomApproved',{'approved' : true, 'name' : roomName});
-			if (rooms[roomName] == 4){
-				startCountdown(10,roomName);
-			}
+
+			//if (rooms[roomName] == 4){
+			//	startCountdown(10,roomName);
+			//}
+
 		}
 		else if (rooms[roomName] >= 4){
 			console.log("Room " + roomName + " is full");
@@ -167,6 +184,17 @@ io.sockets.on('connection', function (socket) {
 			delete socketIDs[roomName];
 			delete clients[roomName];
 			delete clientPlayers[roomName];
+		}
+	});
+
+	socket.on('startTimer', function(timer) {
+		who_set_pseudo[clients[socket.id]][clientPlayers[socket.id]] = true;
+		if (who_set_pseudo[clients[socket.id]][0] && 
+			who_set_pseudo[clients[socket.id]][1] && 
+			who_set_pseudo[clients[socket.id]][2] && 
+			who_set_pseudo[clients[socket.id]][3])
+		{
+			startCountdown(10, clients[socket.id]);
 		}
 	});
 
@@ -283,7 +311,19 @@ io.sockets.on('connection', function (socket) {
 				userhealth[IDtoPseudo[socketIDs[roomName][count]]] = health[socketIDs[roomName][count]];
 			}
 
-			socket.to(rooms[data[id]]).emit('health', userhealth);
+			console.log("Sending Health");
+
+			var actions_0 = {0: actions[roomName][1], 1: actions[roomName][2], 2: actions[roomName][3]};
+			var actions_1 = {0: actions[roomName][0], 1: actions[roomName][2], 2: actions[roomName][3]};
+			var actions_2 = {0: actions[roomName][0], 1: actions[roomName][1], 2: actions[roomName][3]};
+			var actions_3 = {0: actions[roomName][0], 1: actions[roomName][1], 2: actions[roomName][2]};
+
+			socket.to(socketIDs[roomName][0]).emit('record-actions',actions_0);
+			socket.to(socketIDs[roomName][1]).emit('record-actions',actions_1);
+			socket.to(socketIDs[roomName][2]).emit('record-actions',actions_2);
+			socket.to(socketIDs[roomName][3]).emit('record-actions',actions_3);
+
+			socket.to(clients[data[id]]).emit('health', userhealth);
 
 		}
 
