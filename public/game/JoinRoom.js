@@ -61,7 +61,7 @@ RoomButton.prototype.setRoomName = function( name ) {
 
 	this.actualName = name;
 	this.roomName.setText('Room Name: ' + name);
-
+ 
 };
 RoomButton.prototype.setPlayerNumber = function( num ) {
 
@@ -72,6 +72,8 @@ RoomButton.prototype.setPlayerNumber = function( num ) {
 BasicGame.JoinRoom.prototype = {
 
 	preload: function () {
+		this.roomButtons = [];
+
 		this.joinRoomBackground = this.add.sprite(0,0,'gameBackground');
         this.joinRoomBackground.width = 800;
         this.joinRoomBackground.height = 600;
@@ -97,6 +99,7 @@ BasicGame.JoinRoom.prototype = {
 	update: function () {
 		for (var i = 0; i < numGamesPossible; i++) {
 			if (listOfGames[i] != ''){
+				//console.log(this.roomButtons);
 				this.roomButtons[i].setRoomName(listOfGames[i]);
 				this.roomButtons[i].setPlayerNumber(numPlayerInGame[listOfGames[i]]);
 				this.roomButtons[i].visible = true;

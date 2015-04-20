@@ -10,17 +10,10 @@ var timer = 10;
 
 socket.on('playerCount',function(data){
 	numPlayersRemaining = data;
-	if (numPlayersRemaining <= 0){
-		socket.emit('startTimer',timer);
-	}
+	//if (numPlayersRemaining <= 0){
+	//	socket.emit('startTimer',timer);
+	//}
 });
-
-socket.on('countdownTimer',function(data){
-	timer = data;
-	if (timer == 0){
-		game.state.start('SetPseudo');
-	}
-})
 
 BasicGame.WaitingRoom.prototype = {
 
@@ -44,7 +37,8 @@ BasicGame.WaitingRoom.prototype = {
 	update: function () {
 		text.setText("Waiting for " + numPlayersRemaining + " more players");
 		if (numPlayersRemaining <= 0){
-			text.setText("Game Starting in " + timer);
+			this.state.start('SetPseudo');
+			//text.setText("Game Starting in " + timer);
 		}
 	}
 

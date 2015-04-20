@@ -1,7 +1,7 @@
 var socket = io.connect();
 
 var self = null;
-var allusers = [];
+var otherusers = [];
 var num_messages = 0;
 
 // Add a message and a pseudo
@@ -16,12 +16,12 @@ function sentMessage() {
     if ($('#messageInput').val() != "") 
     {
         var recipient = self;
-        for (var i = 0; i < allusers.length; i++)
+        for (var i = 0; i < otherusers.length; i++)
         {
-            console.log(allusers[i]);
-            if (document.getElementById(allusers[i]).checked)
+            console.log(otherusers[i]);
+            if (document.getElementById(otherusers[i]).checked)
             {
-                recipient = allusers[i];
+                recipient = otherusers[i];
             }
         }
 
@@ -47,7 +47,7 @@ function setPseudo() {
         $('#chatControls').show();
         $('#pseudoInput').hide();
         $('#pseudoSet').hide();
-        game.state.start('Game');
+        game.state.start('WaitingRoom2');
         $("#pseudoInput").val("");
     }
 }
@@ -83,8 +83,11 @@ socket.on('gameStart', function(data){
 });
 
 socket.on('setPseudo', function(data) {
-    allusers.push(data['pseudo']);
-    $("#otheruser").append('<div><input type="radio" id="'+ data['pseudo'] + '" name="recipient" value="'+ data['pseudo'] +'">' + data['pseudo'] + '</div>');    
+    if (data['pseudo'] != self)
+    {
+        otherusers.push(data['pseudo']);
+        $("#otheruser").append('<div><input type="radio" id="'+ data['pseudo'] + '" name="recipient" value="'+ data['pseudo'] +'">' + data['pseudo'] + '</div>');    
+    }
 });
 
 socket.on('message', function(data) {
@@ -99,12 +102,6 @@ socket.on('time', function(data) {
     var minutes = Math.floor(data / 60);
     var output = (seconds < 10)? (minutes + ":0" + seconds) : (minutes + ":" + seconds);
     $("#timer").empty().append(output);
-});
-
-socket.on('health', function(userhealth) {
-
-    game.health = userhealth[self];
-    console.log(game.health);
 });
 
 function onStart() {

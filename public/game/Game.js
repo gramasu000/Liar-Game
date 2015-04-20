@@ -26,7 +26,7 @@ BasicGame.Game = function (game) {
     this.gameBackground = null;
     this.kingdom = {};
     this.kingdom_names = {};
-
+    this.show_names = [false, false, false];
 
     this.defend_sprites = {};
     this.defend_buttons = {};
@@ -40,12 +40,25 @@ BasicGame.Game = function (game) {
     this.submit_button = null;
     this.submit_boolean = false; 
 
-    this.health = 100;
+    this.health = {};
+
+    this.record = false;
 };
 
-socket.on('health',function(){
+socket.on('health', function(userhealth) {
+
+    game.health = userhealth;
+    
 
 });
+
+socket.on('record-actions', function(actions) {
+
+    this.record = true;
+    
+
+});
+
 
 BasicGame.Game.prototype = {
 
@@ -248,29 +261,46 @@ BasicGame.Game.prototype = {
         // Display Your Name
         this.kingdom_names[0] = this.add.text(400, 530, self, { font: "32px Arial", fill: "#000000" });
         this.kingdom_names[0].anchor = new Phaser.Point(0.5, 0.5);
-
-        // Display Other's Names
-        this.kingdom_names[1] = this.add.text(70, 300, allusers[0], { font: "32px Arial", fill: "#000000" });
-        this.kingdom_names[1].anchor = new Phaser.Point(0.5, 0.5);
-        this.kingdom_names[1].rotation = Math.PI/2;
-
-        this.kingdom_names[2] = this.add.text(400, 70, allusers[1], { font: "32px Arial", fill: "#000000" });
-        this.kingdom_names[2].anchor = new Phaser.Point(0.5, 0.5);
-
-        this.kingdom_names[3] = this.add.text(730, 300, allusers[2], { font: "32px Arial", fill: "#000000" });
-        this.kingdom_names[3].anchor = new Phaser.Point(0.5, 0.5);
-        this.kingdom_names[3].rotation = -Math.PI/2;
-
     },
 
     update: function () {
 
-        //  Honestly, just about anything could go here. It's YOUR game after all. Eat your heart out!
-        for (var i = 0; i < Object.keys(this.attack_sprites).length; i++)
+        // Display Other's Names
+        if (otherusers[0] != null && !this.show_names[0])
         {
-            this.attack_sprites[i].visible = false;
-            this.defend_sprites[i].visible = false;
-        }        
+            this.kingdom_names[1] = this.add.text(70, 300, otherusers[0], { font: "32px Arial", fill: "#000000" });
+            this.kingdom_names[1].anchor = new Phaser.Point(0.5, 0.5);
+            this.kingdom_names[1].rotation = Math.PI/2;
+            this.show_names[0] = true;
+        }
+        if (otherusers[1] != null && !this.show_names[1])
+        {
+            this.kingdom_names[2] = this.add.text(400, 70, otherusers[1], { font: "32px Arial", fill: "#000000" });
+            this.kingdom_names[2].anchor = new Phaser.Point(0.5, 0.5);
+            this.show_names[1] = true;
+        }
+        if (otherusers[2] != null && !this.show_names[2])
+        {
+            this.kingdom_names[3] = this.add.text(730, 300, otherusers[2], { font: "32px Arial", fill: "#000000" });
+            this.kingdom_names[3].anchor = new Phaser.Point(0.5, 0.5);
+            this.kingdom_names[3].rotation = -Math.PI/2;
+            this.show_names[2 ] = true;
+        }
+
+
+        //  Honestly, just about anything could go here. It's YOUR game after all. Eat your heart out!
+        if (!this.record)
+        {
+            for (var i = 0; i < Object.keys(this.attack_sprites).length; i++)
+            {
+                this.attack_sprites[i].visible = false;
+                this.defend_sprites[i].visible = false;
+            }        
+        }
+        else
+        {
+
+        }
 
     },
 
