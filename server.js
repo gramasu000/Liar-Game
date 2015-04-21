@@ -122,7 +122,6 @@ io.sockets.on('connection', function (socket) {
 			console.log("Room with same name already exists!");
 		}
 		else if (Object.keys(rooms).length < 10) {
-			socket.join(roomName);
 			rooms[roomName] = 1;
 			clients[socket.id] = roomName;
 			clientPlayers[socket.id] = 0;
@@ -132,6 +131,8 @@ io.sockets.on('connection', function (socket) {
 			console.log("user " + socket.id + " has hosted room " + roomName);
 			socket.broadcast.emit('createRoomButton',roomName);
 			io.to(socket.id).emit('roomApproved',{'approved' : true, 'name' : roomName});
+			io.to(socket.id).emit('playerCount',3);
+			socket.join(roomName);
 		}
 		else{
 			io.to(socket.id).emit('roomApproved',{'approved' : false, 'name' : roomName});
@@ -180,6 +181,7 @@ io.sockets.on('connection', function (socket) {
 		var data = 4 - rooms[roomName];
 		io.to(roomName).emit('playerCount',data);
 		if (rooms[roomName] <= 0){
+			socket.broadcast.emit('deleteRoomButton',roomName);
 			delete rooms[roomName];
 			delete socketIDs[roomName];
 			delete clients[roomName];

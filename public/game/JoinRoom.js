@@ -33,16 +33,25 @@ socket.on('updateRoomButtons',function(data){
 	}
 	else if (data['increase'] == false){
 		numPlayerInGame[data['name']]--;
-		if (numPlayerInGame[data['name']] <= 0){
-			for (var i = 0; i < listOfGames.length; i++) {
-				if (listOfGames[i] == data['name']){
-					listOfGames[i] = '';
-					delete numPlayerInGame[name];
-					break;
-				}
-			}
+	}
+});
+
+socket.on('deleteRoomButton',function(name){
+	for (var i = 0; i < numGamesPossible; i++) {
+		if (listOfGames[i] == name){
+			listOfGames[i] = '';
+			delete numPlayerInGame[name];
+			break;
 		}
 	}
+	for (var i = 1; i < numGamesPossible; i++) {
+		if (listOfGames[i] != ''){
+			var j;
+			for (j = i-1; j >= 0 && listOfGames[j] == ''; j--);
+			listOfGames[j+1] = listOfGames[i];
+			listOfGames[i] = '';
+		}
+	};
 });
 
 var RoomButton = function(game, x, y, key, name, callback, callbackContext)
@@ -118,6 +127,8 @@ BasicGame.JoinRoom.prototype = {
 				this.roomButtons[i].setPlayerNumber(numPlayerInGame[listOfGames[i]]);
 				this.roomButtons[i].visible = true;
 			}
+			else
+				this.roomButtons[i].visible = false;
 		}
 	},
 
