@@ -76,6 +76,7 @@ function startCountdown(time,room){
 	},1000)
 	if (timeLeft <= 0){
 		clearInterval(countdown);
+		console.log("Game in room " + room + " has started!");
 	}
 }
 
@@ -93,7 +94,10 @@ function roomExists(room) {
 io.sockets.on('connection', function (socket) {
 	console.log('user ' + socket.id + ' connected');
 	
-	io.to(socket.id).emit('initializeRoomButtons',rooms);
+	//Initialize room buttons every time someone requests to join game
+	socket.on('initializeRooms', function(){
+		io.to(socket.id).emit('initializeRoomButtons',rooms);
+	});
 
 	// SetPseudo event
 	socket.on('setPseudo', function (data) {
@@ -113,13 +117,11 @@ io.sockets.on('connection', function (socket) {
 	//Hosting a room
 	//NOTE: Need to implement error handling stuff
 	socket.on('host', function(roomName){
-		console.log(Object.keys(rooms));
 		if (roomExists(roomName)){
-			io.to(socket.id).emit('roomApproved',false);
+			io.to(socket.id).emit('roomApproved',{'approved' : false, 'name' : roomName});
 			console.log("Room with same name already exists!");
 		}
 		else if (Object.keys(rooms).length < 10) {
-			socket.join(roomName);
 			rooms[roomName] = 1;
 			clients[socket.id] = roomName;
 			clientPlayers[socket.id] = 0;
@@ -128,10 +130,12 @@ io.sockets.on('connection', function (socket) {
 			who_set_pseudo[roomName] = [false, false, false, false];
 			console.log("user " + socket.id + " has hosted room " + roomName);
 			socket.broadcast.emit('createRoomButton',roomName);
-			io.to(socket.id).emit('roomApproved',true);
+			io.to(socket.id).emit('roomApproved',{'approved' : true, 'name' : roomName});
+			io.to(socket.id).emit('playerCount',3);
+			socket.join(roomName);
 		}
 		else{
-			io.to(socket.id).emit('roomApproved',false);
+			io.to(socket.id).emit('roomApproved',{'approved' : false, 'name' : roomName});
 			console.log("Too many rooms currently active");
 		}
 	});
@@ -149,12 +153,15 @@ io.sockets.on('connection', function (socket) {
 			socketIDs[roomName][clientPlayers[socket.id]] = socket.id;
 			var data = 4 - rooms[roomName];
 			io.to(roomName).emit('playerCount',data);
-			socket.broadcast.emit('updateRoomButtons',roomName);
+			socket.broadcast.emit('updateRoomButtons',{'name' : roomName, 'increase' : true});
 			console.log("user " + socket.id + " has joined room " + roomName);
-			io.to(socket.id).emit('roomApproved',true);
+
+			io.to(socket.id).emit('roomApproved',{'approved' : true, 'name' : roomName});
+
 			//if (rooms[roomName] == 4){
 			//	startCountdown(10,roomName);
 			//}
+
 		}
 		else if (rooms[roomName] >= 4){
 			console.log("Room " + roomName + " is full");
@@ -166,6 +173,21 @@ io.sockets.on('connection', function (socket) {
 		}
 	});
 
+	socket.on('exitRoom',function(roomName){
+		console.log("user " + socket.id + " has exited room " + roomName);
+		socket.leave(roomName);
+		socket.broadcast.emit('updateRoomButtons',{'increase' : false, 'name' : roomName});
+		rooms[roomName]--;
+		var data = 4 - rooms[roomName];
+		io.to(roomName).emit('playerCount',data);
+		if (rooms[roomName] <= 0){
+			socket.broadcast.emit('deleteRoomButton',roomName);
+			delete rooms[roomName];
+			delete socketIDs[roomName];
+			delete clients[roomName];
+			delete clientPlayers[roomName];
+		}
+	});
 
 	socket.on('startTimer', function(timer) {
 		who_set_pseudo[clients[socket.id]][clientPlayers[socket.id]] = true;
@@ -187,7 +209,6 @@ io.sockets.on('connection', function (socket) {
 			actions[roomName] = [];
 		}
 		actions[roomName][i] = data;
-		console.log(actions[roomName][i]);
 		console.log('User ' + socket.pseudo  + "," + i + ' submitted actions. ' + (actions[roomName].length-1));
 
 		if (actions[roomName].length == 4)

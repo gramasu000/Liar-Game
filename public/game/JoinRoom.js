@@ -27,8 +27,31 @@ socket.on('initializeRoomButtons',function(rooms){
 	};
 });
 
-socket.on('updateRoomButtons',function(name){
-	numPlayerInGame[name]++;
+socket.on('updateRoomButtons',function(data){
+	if (data['increase'] == true){
+		numPlayerInGame[data['name']]++;
+	}
+	else if (data['increase'] == false){
+		numPlayerInGame[data['name']]--;
+	}
+});
+
+socket.on('deleteRoomButton',function(name){
+	for (var i = 0; i < numGamesPossible; i++) {
+		if (listOfGames[i] == name){
+			listOfGames[i] = '';
+			delete numPlayerInGame[name];
+			break;
+		}
+	}
+	for (var i = 1; i < numGamesPossible; i++) {
+		if (listOfGames[i] != ''){
+			var j;
+			for (j = i-1; j >= 0 && listOfGames[j] == ''; j--);
+			listOfGames[j+1] = listOfGames[i];
+			listOfGames[i] = '';
+		}
+	};
 });
 
 var RoomButton = function(game, x, y, key, name, callback, callbackContext)
@@ -42,7 +65,7 @@ var RoomButton = function(game, x, y, key, name, callback, callbackContext)
 
     this.actualName = name;
     this.roomName = new Phaser.Text(game, 0, 0, 'Room Name: ' + name, this.style);
-    this.numPlayer = new Phaser.Text(game, 0, 0, 'Number of Players: 1/4', this.style);
+    this.numPlayer = new Phaser.Text(game, 0, 0, 'Number of Players: 0/4', this.style);
 
     //puts the label in the center of the button
     this.roomName.anchor.setTo( -0.075 , 0 );
@@ -104,6 +127,8 @@ BasicGame.JoinRoom.prototype = {
 				this.roomButtons[i].setPlayerNumber(numPlayerInGame[listOfGames[i]]);
 				this.roomButtons[i].visible = true;
 			}
+			else
+				this.roomButtons[i].visible = false;
 		}
 	},
 
