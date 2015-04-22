@@ -24,6 +24,9 @@ var IDtoPseudo = {};
 // Who among all players set pseudo
 var who_set_pseudo = {};
 
+// Who among all players set actions
+var who_set_actions = {};
+
 // Health Values
 var health = {};
 var actions = {};
@@ -116,6 +119,7 @@ io.sockets.on('connection', function (socket) {
 			socketIDs[roomName] = [];
 			socketIDs[roomName][0] = socket.id;
 			who_set_pseudo[roomName] = [false, false, false, false];
+			who_set_actions[roomName] = [false, false, false, false];
 			console.log("user " + socket.id + " has hosted room " + roomName);
 			socket.broadcast.emit('createRoomButton',roomName);
 			io.to(socket.id).emit('roomApproved',{'approved' : true, 'name' : roomName});
@@ -143,7 +147,6 @@ io.sockets.on('connection', function (socket) {
 			io.to(roomName).emit('playerCount',data);
 			socket.broadcast.emit('updateRoomButtons',{'name' : roomName, 'increase' : true});
 			console.log("user " + socket.id + " has joined room " + roomName);
-
 			io.to(socket.id).emit('roomApproved',{'approved' : true, 'name' : roomName});
 
 		}
@@ -193,9 +196,10 @@ io.sockets.on('connection', function (socket) {
 			actions[roomName] = [];
 		}
 		actions[roomName][i] = data;
+		who_set_actions[roomName][i] = true;
 		console.log('User ' + socket.pseudo  + "," + i + ' submitted actions. ' + (actions[roomName].length-1));
 
-		if (actions[roomName].length == 4)
+		if (who_set_actions[roomName][0] && who_set_actions[roomName][1] && who_set_actions[roomName][2] && who_set_actions[roomName][3])
 		{
 			for (var j = 0; j < rooms[roomName]; j++)
 			{
@@ -227,13 +231,13 @@ io.sockets.on('connection', function (socket) {
 			if (actions[roomName][1][0] && !actions[roomName][0][1] && (health[socketIDs[roomName][1]] > 0))
 			{
 				console.log("1 attacks 0");
-				health[socketIDs[roomName]] -= 3;
+				health[socketIDs[roomName][0]] -= 3;
 			}
 			// If #0 attacked #2 and #2 did not defend and #0 is still alive after init_decrease
 			if (actions[roomName][0][2] && !actions[roomName][2][1] && (health[socketIDs[roomName][0]] > 0))
 			{
 				console.log("0 attacks 2");
-				health[socketIDs[roomName]] -= 3;
+				health[socketIDs[roomName][2]] -= 3;
 			}
 			// If #2 attacked #0 and #0 did not defend and #2 is still alive after init_decrease
 			if (actions[roomName][2][0] && !actions[roomName][0][3] && (health[socketIDs[roomName][2]] > 0))
@@ -314,7 +318,10 @@ io.sockets.on('connection', function (socket) {
 			io.to(socketIDs[roomName][0]).emit('health',userhealth_0);
 			io.to(socketIDs[roomName][1]).emit('health',userhealth_1);
 			io.to(socketIDs[roomName][2]).emit('health',userhealth_2);
-			io.to(socketIDs[roomName][3]).emit('health',userhealth_3);	
+			io.to(socketIDs[roomName][3]).emit('health',userhealth_3);
+
+			actions[roomName] = [];
+			who_set_actions[roomName] = [false, false, false, false];	
 
 
 		}

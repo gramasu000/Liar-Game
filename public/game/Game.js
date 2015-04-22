@@ -45,6 +45,7 @@ BasicGame.Game = function (game) {
 var health;
 var record_actions;
 var record;
+var record_counter;
 
 socket.on('health', function(userhealth) {
 
@@ -56,6 +57,7 @@ socket.on('record-actions', function(data) {
 
     record_actions = data;
     record = true;
+    record_counter = 0;
     console.log("Actions Recieved");
 
 });
@@ -85,7 +87,7 @@ BasicGame.Game.prototype = {
         this.submit_button = null;
         this.submit_boolean = false; 
 
-        health = { self:100, 0:100, 1:100, 2:100};
+        health = { "self":100, 0:100, 1:100, 2:100};
         record = false;
 
         // Background
@@ -298,18 +300,18 @@ BasicGame.Game.prototype = {
         this.submit_button.anchor = new Phaser.Point(0.5, 0.5); 
 
         // Display Your Name
-        this.kingdom_names[0] = this.add.text(400, 530, self, { font: "32px Arial", fill: "#000000" });
+        this.kingdom_names[0] = this.add.text(400, 530, self + ": " + health["self"], { font: "32px Arial", fill: "#000000" });
         this.kingdom_names[0].anchor = new Phaser.Point(0.5, 0.5);
 
         // Display Kingdom Names
-        this.kingdom_names[1] = this.add.text(70, 300, otherusers[0], { font: "32px Arial", fill: "#000000" });
+        this.kingdom_names[1] = this.add.text(70, 300, otherusers[0] + ": " + health[0], { font: "32px Arial", fill: "#000000" });
         this.kingdom_names[1].anchor = new Phaser.Point(0.5, 0.5);
         this.kingdom_names[1].rotation = Math.PI/2;
 
-        this.kingdom_names[2] = this.add.text(400, 70, otherusers[1], { font: "32px Arial", fill: "#000000" });
+        this.kingdom_names[2] = this.add.text(400, 70, otherusers[1] + ": " + health[1], { font: "32px Arial", fill: "#000000" });
         this.kingdom_names[2].anchor = new Phaser.Point(0.5, 0.5);
 
-        this.kingdom_names[3] = this.add.text(730, 300, otherusers[2], { font: "32px Arial", fill: "#000000" });
+        this.kingdom_names[3] = this.add.text(730, 300, otherusers[2] + ": " + health[2], { font: "32px Arial", fill: "#000000" });
         this.kingdom_names[3].anchor = new Phaser.Point(0.5, 0.5);
         this.kingdom_names[3].rotation = -Math.PI/2;
     },
@@ -318,14 +320,18 @@ BasicGame.Game.prototype = {
 
         //  Honestly, just about anything could go here. It's YOUR game after all. Eat your heart out!
         
-        if (record)
+        if (record && record_counter < 100)
         {
+            // Remove the submit button
+            this.submit_button.visible = false;
+
             // i represents other user "global" position
             for (var i = 0; i < 3; i++)
             {
-                // j is the index for the other persons local position
+                // j is the index for the other persons actions
                 for (var j = 0; j < 6; j++)
                 {
+                    // If j is odd refers to defence
                     if (j%2)
                     {
                         if (record_actions[i][j])
@@ -333,6 +339,7 @@ BasicGame.Game.prototype = {
                             this.defend_sprites[this.decode(record_actions["position"], i, j)].visible = true;
                         }
                     }
+                    // If j is even refers to attack
                     else
                     {
                         if (record_actions[i][j])
@@ -342,6 +349,39 @@ BasicGame.Game.prototype = {
                     }
                 }
             }
+
+            this.kingdom_names[0].setText(self + ": " + health["self"]);
+            this.kingdom_names[1].setText(otherusers[0] + ": " + health[0]);
+            this.kingdom_names[2].setText(otherusers[1] + ": " + health[1]);
+            this.kingdom_names[3].setText(otherusers[2] + ": " + health[2]);
+
+            record_counter++;
+
+        }
+        else if (record_counter == 100)
+        {
+            for (var k = 0; k < 9; k++)
+            {
+                this.defend_sprites[k].visible = false;
+                this.attack_sprites[k].visible = false;
+            }
+
+            if (health["self"] > 0)
+            {
+                this.submit_boolean = false;
+                this.submit_button.visible = true;
+            }
+
+            for (var k = 0; k < 3; k++)
+            {
+                this.attack_booleans[k] = false;
+                this.attack_buttons[k].tint = 0x794044;
+                this.defend_booleans[k] = false;
+                this.defend_buttons[k].tint = 0x794044;
+            }
+
+            record_counter = 0;
+            record = false;
         }
 
     },
@@ -451,7 +491,7 @@ BasicGame.Game.prototype = {
     submit: function () {
 
         
-        if (!this.submit_boolean)
+        if (!this.submit_boolean || (health["self"] == 0))
         {
 
             var actions = { 'id' : socket.id,
