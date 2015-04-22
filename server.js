@@ -45,18 +45,6 @@ var server = http.createServer(app);
 var io = require('socket.io').listen(server);
 server.listen(3000);
 
-//Send time to all players
-//var timer = 150;
-//function sendTime(){
-//	if (timer == 0)
-//		timer = 150;
-//	io.sockets.emit('time', timer);
-//	if (timer > 0)
-//		timer--;
-//}
-//Send time every second
-//setInterval(sendTime,1000);
-
 function GameCountDown(time, room) {
 	var timeLeft = time;
 	countdown = setInterval(function(){
@@ -157,10 +145,6 @@ io.sockets.on('connection', function (socket) {
 			console.log("user " + socket.id + " has joined room " + roomName);
 
 			io.to(socket.id).emit('roomApproved',{'approved' : true, 'name' : roomName});
-
-			//if (rooms[roomName] == 4){
-			//	startCountdown(10,roomName);
-			//}
 
 		}
 		else if (rooms[roomName] >= 4){
@@ -306,26 +290,32 @@ io.sockets.on('connection', function (socket) {
 				health[socketIDs[roomName][2]] -=  3;
 			}
 
-			var userhealth = {};
+			console.log("Sending Health and Actions");
 
-			for (var count = 0; count < rooms[roomName]; count++)
-			{
-				userhealth[IDtoPseudo[socketIDs[roomName][count]]] = health[socketIDs[roomName][count]];
-			}
+			var userhealth_0 = {"self": health[socketIDs[roomName][0]], 0: health[socketIDs[roomName][1]], 
+								1: health[socketIDs[roomName][2]], 2: health[socketIDs[roomName][3]] };
+			var userhealth_1 = {"self": health[socketIDs[roomName][1]], 0: health[socketIDs[roomName][0]], 
+								1: health[socketIDs[roomName][2]], 2: health[socketIDs[roomName][3]] };
+			var userhealth_2 = {"self": health[socketIDs[roomName][2]], 0: health[socketIDs[roomName][0]], 
+								1: health[socketIDs[roomName][1]], 2: health[socketIDs[roomName][3]] };
+			var userhealth_3 = {"self": health[socketIDs[roomName][3]], 0: health[socketIDs[roomName][0]], 
+								1: health[socketIDs[roomName][1]], 2: health[socketIDs[roomName][2]] };
 
-			console.log("Sending Health");
+			var actions_0 = {0: actions[roomName][1], 1: actions[roomName][2], 2: actions[roomName][3], "position": 0};
+			var actions_1 = {0: actions[roomName][0], 1: actions[roomName][2], 2: actions[roomName][3], "position": 1};
+			var actions_2 = {0: actions[roomName][0], 1: actions[roomName][1], 2: actions[roomName][3], "position": 2};
+			var actions_3 = {0: actions[roomName][0], 1: actions[roomName][1], 2: actions[roomName][2], "position": 3};
 
-			var actions_0 = {0: actions[roomName][1], 1: actions[roomName][2], 2: actions[roomName][3]};
-			var actions_1 = {0: actions[roomName][0], 1: actions[roomName][2], 2: actions[roomName][3]};
-			var actions_2 = {0: actions[roomName][0], 1: actions[roomName][1], 2: actions[roomName][3]};
-			var actions_3 = {0: actions[roomName][0], 1: actions[roomName][1], 2: actions[roomName][2]};
+			io.to(socketIDs[roomName][0]).emit('record-actions',actions_0);
+			io.to(socketIDs[roomName][1]).emit('record-actions',actions_1);
+			io.to(socketIDs[roomName][2]).emit('record-actions',actions_2);
+			io.to(socketIDs[roomName][3]).emit('record-actions',actions_3);
 
-			socket.to(socketIDs[roomName][0]).emit('record-actions',actions_0);
-			socket.to(socketIDs[roomName][1]).emit('record-actions',actions_1);
-			socket.to(socketIDs[roomName][2]).emit('record-actions',actions_2);
-			socket.to(socketIDs[roomName][3]).emit('record-actions',actions_3);
+			io.to(socketIDs[roomName][0]).emit('health',userhealth_0);
+			io.to(socketIDs[roomName][1]).emit('health',userhealth_1);
+			io.to(socketIDs[roomName][2]).emit('health',userhealth_2);
+			io.to(socketIDs[roomName][3]).emit('health',userhealth_3);	
 
-			socket.to(clients[data[id]]).emit('health', userhealth);
 
 		}
 
