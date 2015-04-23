@@ -174,19 +174,16 @@ io.sockets.on('connection', function (socket) {
 			delete clients[roomName];
 			delete clientPlayers[socket.id];
 		}
-		else
-		{
+		else{
 			var index = clientPlayers[socket.id];
 			delete clientPlayers[socket.id];
 			socketIDs[roomName][index] = null;
 			var allPlayers = Object.keys(clients);
 			var remainingPlayers = [];
-			for (var i = 0; i < allPlayers.length; i++)
-			{
+			for (var i = 0; i < allPlayers.length; i++) {
 				var user = allPlayers[i];
 				var clientToCheck = clients[user];
-				if (clientToCheck == roomName)
-				{
+				if (clientToCheck == roomName){
 					remainingPlayers[clientPlayers[user]] = user;
 				}
 			}
@@ -198,6 +195,7 @@ io.sockets.on('connection', function (socket) {
 			}
 
 		}
+
 	});
 
 	socket.on('startTimer', function(timer) {
