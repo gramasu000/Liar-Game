@@ -182,7 +182,7 @@ io.sockets.on('connection', function (socket) {
 			var remainingPlayers = [];
 			for (var i = 0; i < allPlayers.length; i++) {
 				var user = allPlayers[i];
-				var clientToCheck = clients[users;
+				var clientToCheck = clients[user];
 				if (clientToCheck == roomName){
 					remainingPlayers[clientPlayers[user]] = user;
 				}
