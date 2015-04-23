@@ -185,8 +185,30 @@ io.sockets.on('connection', function (socket) {
 			delete rooms[roomName];
 			delete socketIDs[roomName];
 			delete clients[roomName];
-			delete clientPlayers[roomName];
+			delete clientPlayers[socket.id];
 		}
+		else{
+			var index = clientPlayers[socket.id];
+			delete clientPlayers[socket.id];
+			socketIDs[roomName][index] = null;
+			var allPlayers = Object.keys(clients);
+			var remainingPlayers = [];
+			for (var i = 0; i < allPlayers.length; i++) {
+				var user = allPlayers[i];
+				var clientToCheck = clients[users;
+				if (clientToCheck == roomName){
+					remainingPlayers[clientPlayers[user]] = user;
+				}
+			}
+			var tempIndex = 0;
+			for (var i = 0; i < remainingPlayers.length; i++) {
+				if (remainingPlayers[i] != null){
+					clientPlayers[remainingPlayers[i]] = tempIndex++;
+				}
+			}
+
+		}
+
 	});
 
 	socket.on('startTimer', function(timer) {
