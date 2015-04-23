@@ -23,39 +23,42 @@ BasicGame.Game = function (game) {
     //  You can use any of these from any function within this State.
     //  But do consider them as being 'reserved words', i.e. don't create a property for your own game called "world" or you'll over-write the world reference.
 
-    this.gameBackground = null;
-    this.kingdom = {};
-    this.kingdom_names = {};
-    this.show_names = [false, false, false];
+    this.gameBackground;
+    this.kingdom;
+    this.kingdom_names;
+    this.show_names;
 
-    this.defend_sprites = {};
-    this.defend_buttons = {};
-    this.defend_booleans = {0: false, 1: false, 2:false };
+    this.defend_sprites;
+    this.defend_buttons;
+    this.defend_booleans;
     
-    this.attack_sprites = {};
-    this.attack_buttons = {};
+    this.attack_sprites;
+    this.attack_buttons;
 
-    this.attack_booleans = {0: false, 1: false, 2:false };
+    this.attack_booleans;
     
-    this.submit_button = null;
-    this.submit_boolean = false; 
+    this.submit_button;
+    this.submit_boolean; 
 
-    this.health = {};
-
-    this.record = false;
 };
+
+var health;
+var record_actions;
+var record;
+var record_counter;
 
 socket.on('health', function(userhealth) {
 
-    game.health = userhealth;
-    
-
+    health = userhealth;
+    console.log('Health recieved');
 });
 
-socket.on('record-actions', function(actions) {
+socket.on('record-actions', function(data) {
 
-    this.record = true;
-    
+    record_actions = data;
+    record = true;
+    record_counter = 0;
+    console.log("Actions Recieved");
 
 });
 
@@ -65,6 +68,27 @@ BasicGame.Game.prototype = {
     create: function () {
 
         //  Honestly, just about anything could go here. It's YOUR game after all. Eat your heart out!
+
+        // Initialize all variables
+        this.gameBackground = null;
+        this.kingdom = {};
+        this.kingdom_names = {};
+        this.show_names = [false, false, false];
+
+        this.defend_sprites = {};
+        this.defend_buttons = {};
+        this.defend_booleans = {0: false, 1: false, 2:false };
+        
+        this.attack_sprites = {};
+        this.attack_buttons = {};
+
+        this.attack_booleans = {0: false, 1: false, 2:false };
+        
+        this.submit_button = null;
+        this.submit_boolean = false; 
+
+        health = { "self":100, 0:100, 1:100, 2:100};
+        record = false;
 
         // Background
         this.gameBackground = this.add.sprite(0,0,'gameBackground');
@@ -102,55 +126,63 @@ BasicGame.Game.prototype = {
         this.defend_sprites[0].width = 100;
         this.defend_sprites[0].height = 20;
         this.defend_sprites[0].rotation = Math.PI/2;
+        this.defend_sprites[0].visible = false;
 
         this.defend_sprites[1] = this.add.sprite(85, 170, 'defend');
         this.defend_sprites[1].anchor = new Phaser.Point(0.5,0.5);
         this.defend_sprites[1].width = 100;
         this.defend_sprites[1].height = 20;
         this.defend_sprites[1].rotation = Math.PI - 2.35;
+        this.defend_sprites[1].visible = false;
 
         this.defend_sprites[2] = this.add.sprite(85, 430, 'defend');
         this.defend_sprites[2].anchor = new Phaser.Point(0.5,0.5);
         this.defend_sprites[2].width = 100;
         this.defend_sprites[2].height = 20;
         this.defend_sprites[2].rotation = 2.35;
+        this.defend_sprites[2].visible = false;
 
         this.defend_sprites[3] = this.add.sprite(400, 150, 'defend');
         this.defend_sprites[3].anchor = new Phaser.Point(0.5,0.5);
         this.defend_sprites[3].width = 100;
         this.defend_sprites[3].height = 20;
+        this.defend_sprites[3].visible = false;
 
         this.defend_sprites[4] = this.add.sprite(540, 80, 'defend');
         this.defend_sprites[4].anchor = new Phaser.Point(0.5,0.5);
         this.defend_sprites[4].width = 100;
         this.defend_sprites[4].height = 20;
         this.defend_sprites[4].rotation = 2.23;
+        this.defend_sprites[4].visible = false;
 
         this.defend_sprites[5] = this.add.sprite(260, 80, 'defend');
         this.defend_sprites[5].anchor = new Phaser.Point(0.5,0.5);
         this.defend_sprites[5].width = 100;
         this.defend_sprites[5].height = 20;
         this.defend_sprites[5].rotation = Math.PI - 2.23;
+        this.defend_sprites[5].visible = false;
 
         this.defend_sprites[6] = this.add.sprite(670, 300, 'defend');
         this.defend_sprites[6].anchor = new Phaser.Point(0.5,0.5);
         this.defend_sprites[6].width = 100;
         this.defend_sprites[6].height = 20;
         this.defend_sprites[6].rotation = Math.PI/2;
+        this.defend_sprites[6].visible = false;
 
         this.defend_sprites[7] = this.add.sprite(715, 430, 'defend');
         this.defend_sprites[7].anchor = new Phaser.Point(0.5,0.5);
         this.defend_sprites[7].width = 100;
         this.defend_sprites[7].height = 20;
         this.defend_sprites[7].rotation = Math.PI - 2.35;
+        this.defend_sprites[7].visible = false;
 
         this.defend_sprites[8] = this.add.sprite(715, 170, 'defend');
         this.defend_sprites[8].anchor = new Phaser.Point(0.5,0.5);
         this.defend_sprites[8].width = 100;
         this.defend_sprites[8].height = 20;
         this.defend_sprites[8].rotation = 2.35;
+        this.defend_sprites[8].visible = false;
         
-
 
         // Defend BUTTONS for YOUR kingdom
         this.defend_buttons[0] = this.add.button(260,510,'defend',this.defend0, this, 'buttonOver', 'buttonOut', 'buttonOver');
@@ -180,54 +212,63 @@ BasicGame.Game.prototype = {
         this.attack_sprites[0].anchor = new Phaser.Point(0.5,0.5);
         this.attack_sprites[0].width = 100;
         this.attack_sprites[0].height = 100;
+        this.attack_sprites[0].visible = false;
 
         this.attack_sprites[1] = this.add.sprite(120, 140, 'attack');
         this.attack_sprites[1].anchor = new Phaser.Point(0.5, 0.5);
         this.attack_sprites[1].width = 50;
         this.attack_sprites[1].height = 100;
-        this.attack_sprites[1].rotation = Math.PI + 2.35
+        this.attack_sprites[1].rotation = Math.PI + 2.35;
+        this.attack_sprites[1].visible = false;
 
         this.attack_sprites[2] = this.add.sprite(120, 460, 'attack');
         this.attack_sprites[2].anchor = new Phaser.Point(0.5, 0.5);
         this.attack_sprites[2].width = 50;
         this.attack_sprites[2].height = 100;
-        this.attack_sprites[2].rotation = Math.PI - 2.35
+        this.attack_sprites[2].rotation = Math.PI - 2.35;
+        this.attack_sprites[2].visible = false;
 
         this.attack_sprites[3] = this.add.sprite(400, 220, 'attack');
         this.attack_sprites[3].anchor = new Phaser.Point(0.5,0.5);
         this.attack_sprites[3].width = 100;
         this.attack_sprites[3].height = 100;
         this.attack_sprites[3].rotation = Math.PI/2;
+        this.attack_sprites[3].visible = false;
 
         this.attack_sprites[4] = this.add.sprite(575, 105, 'attack');
         this.attack_sprites[4].anchor = new Phaser.Point(0.5,0.5);
         this.attack_sprites[4].width = 50;
         this.attack_sprites[4].height = 100;
         this.attack_sprites[4].rotation = Math.PI - 2.5;
+        this.attack_sprites[4].visible = false;
 
         this.attack_sprites[5] = this.add.sprite(225, 105, 'attack');
         this.attack_sprites[5].anchor = new Phaser.Point(0.5,0.5);
         this.attack_sprites[5].width = 50;
         this.attack_sprites[5].height = 100;
         this.attack_sprites[5].rotation = 2.5;
+        this.attack_sprites[5].visible = false;
 
         this.attack_sprites[6] = this.add.sprite(600, 300, 'attack');
         this.attack_sprites[6].anchor = new Phaser.Point(0.5, 0.5);
         this.attack_sprites[6].width = 100;
         this.attack_sprites[6].height = 100;
         this.attack_sprites[6].rotation = Math.PI;
+        this.attack_sprites[6].visible = false;
 
-        this.attack_sprites[7] = this.add.sprite(680, 140, 'attack');
+        this.attack_sprites[7] = this.add.sprite(680, 460, 'attack');
         this.attack_sprites[7].anchor = new Phaser.Point(0.5, 0.5);
         this.attack_sprites[7].width = 50;
         this.attack_sprites[7].height = 100;
-        this.attack_sprites[7].rotation = (2*Math.PI) - 2.35
+        this.attack_sprites[7].rotation = 2.35
+        this.attack_sprites[7].visible = false;
 
-        this.attack_sprites[8] = this.add.sprite(680, 460, 'attack');
+        this.attack_sprites[8] = this.add.sprite(680, 140, 'attack');
         this.attack_sprites[8].anchor = new Phaser.Point(0.5, 0.5);
         this.attack_sprites[8].width = 50;
         this.attack_sprites[8].height = 100;
-        this.attack_sprites[8].rotation = 2.35
+        this.attack_sprites[8].rotation = (2*Math.PI) - 2.35
+        this.attack_sprites[8].visible = false;
 
         // Attack buttons for your kingdom
         this.attack_buttons[0] = this.add.button(225, 485, 'attack', this.attack0, this);
@@ -259,47 +300,88 @@ BasicGame.Game.prototype = {
         this.submit_button.anchor = new Phaser.Point(0.5, 0.5); 
 
         // Display Your Name
-        this.kingdom_names[0] = this.add.text(400, 530, self, { font: "32px Arial", fill: "#000000" });
+        this.kingdom_names[0] = this.add.text(400, 530, self + ": " + health["self"], { font: "32px Arial", fill: "#000000" });
         this.kingdom_names[0].anchor = new Phaser.Point(0.5, 0.5);
+
+        // Display Kingdom Names
+        this.kingdom_names[1] = this.add.text(70, 300, otherusers[0] + ": " + health[0], { font: "32px Arial", fill: "#000000" });
+        this.kingdom_names[1].anchor = new Phaser.Point(0.5, 0.5);
+        this.kingdom_names[1].rotation = Math.PI/2;
+
+        this.kingdom_names[2] = this.add.text(400, 70, otherusers[1] + ": " + health[1], { font: "32px Arial", fill: "#000000" });
+        this.kingdom_names[2].anchor = new Phaser.Point(0.5, 0.5);
+
+        this.kingdom_names[3] = this.add.text(730, 300, otherusers[2] + ": " + health[2], { font: "32px Arial", fill: "#000000" });
+        this.kingdom_names[3].anchor = new Phaser.Point(0.5, 0.5);
+        this.kingdom_names[3].rotation = -Math.PI/2;
     },
 
     update: function () {
 
-        // Display Other's Names
-        if (otherusers[0] != null && !this.show_names[0])
-        {
-            this.kingdom_names[1] = this.add.text(70, 300, otherusers[0], { font: "32px Arial", fill: "#000000" });
-            this.kingdom_names[1].anchor = new Phaser.Point(0.5, 0.5);
-            this.kingdom_names[1].rotation = Math.PI/2;
-            this.show_names[0] = true;
-        }
-        if (otherusers[1] != null && !this.show_names[1])
-        {
-            this.kingdom_names[2] = this.add.text(400, 70, otherusers[1], { font: "32px Arial", fill: "#000000" });
-            this.kingdom_names[2].anchor = new Phaser.Point(0.5, 0.5);
-            this.show_names[1] = true;
-        }
-        if (otherusers[2] != null && !this.show_names[2])
-        {
-            this.kingdom_names[3] = this.add.text(730, 300, otherusers[2], { font: "32px Arial", fill: "#000000" });
-            this.kingdom_names[3].anchor = new Phaser.Point(0.5, 0.5);
-            this.kingdom_names[3].rotation = -Math.PI/2;
-            this.show_names[2 ] = true;
-        }
-
-
         //  Honestly, just about anything could go here. It's YOUR game after all. Eat your heart out!
-        if (!this.record)
+        
+        if (record && record_counter < 100)
         {
-            for (var i = 0; i < Object.keys(this.attack_sprites).length; i++)
-            {
-                this.attack_sprites[i].visible = false;
-                this.defend_sprites[i].visible = false;
-            }        
-        }
-        else
-        {
+            // Remove the submit button
+            this.submit_button.visible = false;
 
+            // i represents other user "global" position
+            for (var i = 0; i < 3; i++)
+            {
+                // j is the index for the other persons actions
+                for (var j = 0; j < 6; j++)
+                {
+                    // If j is odd refers to defence
+                    if (j%2)
+                    {
+                        if (record_actions[i][j])
+                        {
+                            this.defend_sprites[this.decode(record_actions["position"], i, j)].visible = true;
+                        }
+                    }
+                    // If j is even refers to attack
+                    else
+                    {
+                        if (record_actions[i][j])
+                        {
+                            this.attack_sprites[this.decode(record_actions["position"], i, j)].visible = true;
+                        }
+                    }
+                }
+            }
+
+            this.kingdom_names[0].setText(self + ": " + health["self"]);
+            this.kingdom_names[1].setText(otherusers[0] + ": " + health[0]);
+            this.kingdom_names[2].setText(otherusers[1] + ": " + health[1]);
+            this.kingdom_names[3].setText(otherusers[2] + ": " + health[2]);
+
+            record_counter++;
+
+        }
+        else if (record_counter == 100)
+        {
+            for (var k = 0; k < 9; k++)
+            {
+                this.defend_sprites[k].visible = false;
+                this.attack_sprites[k].visible = false;
+            }
+
+            if (health["self"] > 0)
+            {
+                this.submit_boolean = false;
+                this.submit_button.visible = true;
+            }
+
+            for (var k = 0; k < 3; k++)
+            {
+                this.attack_booleans[k] = false;
+                this.attack_buttons[k].tint = 0x794044;
+                this.defend_booleans[k] = false;
+                this.defend_buttons[k].tint = 0x794044;
+            }
+
+            record_counter = 0;
+            record = false;
         }
 
     },
@@ -408,18 +490,110 @@ BasicGame.Game.prototype = {
 
     submit: function () {
 
-        this.submit_boolean = true;
+        
+        if (!this.submit_boolean || (health["self"] == 0))
+        {
 
-        var actions = { 'id' : socket.id,
+            var actions = { 'id' : socket.id,
                         0: this.attack_booleans[0], 
                         1: this.defend_booleans[0], 
                         2: this.attack_booleans[1], 
                         3: this.defend_booleans[1], 
                         4: this.attack_booleans[2],
                         5: this.defend_booleans[2] };
+            socket.emit('actions', actions);
+        }
 
-        socket.emit('actions', actions);
+        this.submit_boolean = true;
 
+    },
+
+    decode: function (yourPos, otherplayerPos, direction) 
+    {
+        if (yourPos == 0)
+        {
+            if (otherplayerPos == 0)
+            {
+                if ((direction == 0) || (direction == 1)) { return 2; }
+                else if ((direction == 2) || (direction == 3)) { return 1; }
+                else if ((direction == 4) || (direction == 5)) { return 0; }
+            }
+            else if (otherplayerPos == 1)
+            {
+                if ((direction == 0) || (direction == 1)) { return 3; }
+                else if ((direction == 2) || (direction == 3)) { return 5; }
+                else if ((direction == 4) || (direction == 5)) { return 4; }
+            }
+            else if (otherplayerPos == 2)
+            {
+                if ((direction == 0) || (direction == 1)) { return 7; }
+                else if ((direction == 2) || (direction == 3)) { return 6; }
+                else if ((direction == 4) || (direction == 5)) { return 8; }
+            }
+        }
+        else if (yourPos == 1)
+        {
+            if (otherplayerPos == 0)
+            {
+                if ((direction == 0) || (direction == 1)) { return 2; }
+                else if ((direction == 2) || (direction == 3)) { return 1; }
+                else if ((direction == 4) || (direction == 5)) { return 0; }
+            }
+            else if (otherplayerPos == 1)
+            {
+                if ((direction == 0) || (direction == 1)) { return 5; }
+                else if ((direction == 2) || (direction == 3)) { return 3; }
+                else if ((direction == 4) || (direction == 5)) { return 4; }
+            }
+            else if (otherplayerPos == 2)
+            {
+                if ((direction == 0) || (direction == 1)) { return 6; }
+                else if ((direction == 2) || (direction == 3)) { return 7; }
+                else if ((direction == 4) || (direction == 5)) { return 8; }
+            }
+        }
+        else if (yourPos == 2)
+        {
+            if (otherplayerPos == 0)
+            {
+                if ((direction == 0) || (direction == 1)) { return 1; }
+                else if ((direction == 2) || (direction == 3)) { return 2; }
+                else if ((direction == 4) || (direction == 5)) { return 0; }
+            }
+            else if (otherplayerPos == 1)
+            {
+                if ((direction == 0) || (direction == 1)) { return 5; }
+                else if ((direction == 2) || (direction == 3)) { return 3; }
+                else if ((direction == 4) || (direction == 5)) { return 4; }
+            }
+            else if (otherplayerPos == 2)
+            {
+                if ((direction == 0) || (direction == 1)) { return 6; }
+                else if ((direction == 2) || (direction == 3)) { return 8; }
+                else if ((direction == 4) || (direction == 5)) { return 7; }
+            }
+        }
+        else if (yourPos == 3)
+        {
+            if (otherplayerPos == 0)
+            {
+                if ((direction == 0) || (direction == 1)) { return 1; }
+                else if ((direction == 2) || (direction == 3)) { return 0; }
+                else if ((direction == 4) || (direction == 5)) { return 2; }
+            }
+            else if (otherplayerPos == 1)
+            {
+                if ((direction == 0) || (direction == 1)) { return 5; }
+                else if ((direction == 2) || (direction == 3)) { return 4; }
+                else if ((direction == 4) || (direction == 5)) { return 3; }
+            }
+            else if (otherplayerPos == 2)
+            {
+                if ((direction == 0) || (direction == 1)) { return 6; }
+                else if ((direction == 2) || (direction == 3)) { return 8; }
+                else if ((direction == 4) || (direction == 5)) { return 7; }
+            }
+        }
     }
 
 };
