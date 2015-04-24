@@ -34,6 +34,7 @@ var actions = {};
 // Constant Values - MUST MATCH THE SAME NAME ON SCRIPT FILE
 var GAME_TIME = 150;
 var RESULTS_TIME = 15;
+var MAX_HEALTH = 20;
 
 // Set the parameters
 app.set('views', __dirname + '/views');
@@ -52,10 +53,14 @@ var server = http.createServer(app);
 var io = require('socket.io').listen(server);
 server.listen(3000);
 
+// Is the game phase running?
 var gamecount = {};
 
 // If everyone submits before timer runs out
 var presubmit = {};
+
+// If game is running
+var gamerunning = {};
 
 function GameCountDown(time, room) {
 	var timeLeft = time;
@@ -80,7 +85,10 @@ function ResultsCountDown(time, room) {
 		timeLeft--;
 		if (timeLeft < 0){
 			clearInterval(countdown);
-			GameCountDown(GAME_TIME, room);
+			if (gamerunning[room])
+			{
+				GameCountDown(GAME_TIME, room);
+			}
 			gamecount[room] = true;
 			presubmit[room] = false;
 		}
@@ -122,7 +130,7 @@ io.sockets.on('connection', function (socket) {
 	// SetPseudo event
 	socket.on('setPseudo', function (data) {
     	socket.pseudo = data['pseudo'];
-    	health[socket.id] = 100;
+    	health[socket.id] = MAX_HEALTH;
     	IDtoPseudo[socket.id] = socket.pseudo;
       	io.to(clients[socket.id]).emit('setPseudo', data);
 	});
@@ -244,8 +252,9 @@ io.sockets.on('connection', function (socket) {
 		var roomName = clients[socket.id];
 		if (!gamecount[roomName])
 		{
-			GameCountDown(num, roomName);
 			gamecount[roomName] = true;
+			gamerunning[roomName] = true;
+			GameCountDown(num, roomName);
 		}
 	})
 
@@ -259,6 +268,7 @@ io.sockets.on('connection', function (socket) {
 		}
 		actions[roomName][i] = data;
 		who_set_actions[roomName][i] = true;
+
 		console.log('User ' + socket.pseudo  + "," + i + ' submitted actions. ' + (actions[roomName].length-1));
 
 		if (who_set_actions[roomName][0] && who_set_actions[roomName][1] && who_set_actions[roomName][2] && who_set_actions[roomName][3])
@@ -389,6 +399,10 @@ io.sockets.on('connection', function (socket) {
 
 		}
 
+	});
+
+	socket.on('gameEnd', function (data) {
+		gamerunning[clients[socket.id]] = data;
 	}); 
 
 	//Alerts when someone disconnects

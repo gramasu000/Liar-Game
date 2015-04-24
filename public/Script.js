@@ -7,6 +7,7 @@ var num_messages = 0;
 // Constant Values - MUST MATCH THE SAME NAME ON SCRIPT FILE
 var GAME_TIME = 150;
 var RESULTS_TIME = 15;
+var MAX_HEALTH = 20;
 
 // Add a message and a pseudo
 function addMessage(msg, pseudo) {

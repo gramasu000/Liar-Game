@@ -41,10 +41,12 @@ BasicGame.Game = function (game) {
     this.submit_boolean; 
 
     this.timer_text;
+    this.win_text;
+    this.lose_text;
 
 };
 
-var health;
+var health = {};
 var record_actions;
 var record;
 var record_counter;
@@ -93,7 +95,11 @@ BasicGame.Game.prototype = {
         this.submit_button = null;
         this.submit_boolean = false; 
 
-        health = { "self":100, 0:100, 1:100, 2:100};
+        health["self"] = MAX_HEALTH;
+        health[0] = MAX_HEALTH;
+        health[1] = MAX_HEALTH;
+        health[2] = MAX_HEALTH;
+
         record = false;
         gametimer = GAME_TIME;
 
@@ -361,26 +367,28 @@ BasicGame.Game.prototype = {
                 }
             }
 
+            // Update Health on Screen
             this.kingdom_names[0].setText(self + ": " + health["self"]);
             this.kingdom_names[1].setText(otherusers[0] + ": " + health[0]);
             this.kingdom_names[2].setText(otherusers[1] + ": " + health[1]);
             this.kingdom_names[3].setText(otherusers[2] + ": " + health[2]);
 
+            if ((health[0] <= 0) && (health[1] <= 0) && (health[2] <= 0))
+            {
+                socket.emit("gameEnd", false);
+            }
+
         }
         else if (record_counter <= 0)
         {
+            // Stop displaying results
             for (var k = 0; k < 9; k++)
             {
                 this.defend_sprites[k].visible = false;
                 this.attack_sprites[k].visible = false;
             }
 
-            if (health["self"] > 0)
-            {
-                this.submit_boolean = false;
-                this.submit_button.visible = true;
-            }
-
+            // Remove all colorings from your buttons
             for (var k = 0; k < 3; k++)
             {
                 this.attack_booleans[k] = false;
@@ -389,11 +397,35 @@ BasicGame.Game.prototype = {
                 this.defend_buttons[k].tint = 0x794044;
             }
 
+            // Reset record counter and game counters
+            // Show game counters
             record_counter = RESULTS_TIME;
             record = false;
             gametimer = GAME_TIME;
             this.timer_text.setText(gametimer);
-            socket.emit("startGameTimer", GAME_TIME);
+
+            // If you win, you win
+            if ((health[0] <= 0) && (health[1] <= 0) && (health[2] <= 0) && (health["self"] > 0))
+            {
+                this.win_text = this.add.text(400, 270, "You Win!", {font: "32px Arial", fill: "#FFFFFF" });
+                this.win_text.anchor = new Phaser.Point(0.5, 0.5);   
+            }
+            // If you are alive, set the submit boolean to false so you can submit your moves 
+            // for the next turn
+            else if (health["self"] > 0)
+            {
+                this.submit_boolean = false;
+                this.submit_button.visible = true;
+            }
+            // If you are dead, you lose and you always submit nothing at the beginning of the 
+            else
+            {
+                this.submit_button = false;
+                this.submit();
+                this.lose_text = this.add.text(400, 270, "You Lose!", {font: "32px Arial", fill: "#FFFFFF" });
+                this.lose_text = new Phaser.Point(0.5,0.5);
+            }
+
         }
         else
         {
