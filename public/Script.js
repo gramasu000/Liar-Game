@@ -4,6 +4,10 @@ var self = null;
 var otherusers = [];
 var num_messages = 0;
 
+// Constant Values - MUST MATCH THE SAME NAME ON SCRIPT FILE
+var GAME_TIME = 150;
+var RESULTS_TIME = 15;
+
 // Add a message and a pseudo
 function addMessage(msg, pseudo) {
     num_messages++;
@@ -95,13 +99,6 @@ socket.on('message', function(data) {
     {
         addMessage(data['message'], data['pseudo']);
     }
-});
-
-socket.on('time', function(data) {
-    var seconds = data % 60;
-    var minutes = Math.floor(data / 60);
-    var output = (seconds < 10)? (minutes + ":0" + seconds) : (minutes + ":" + seconds);
-    $("#timer").empty().append(output);
 });
 
 function onStart() {

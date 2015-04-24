@@ -40,12 +40,15 @@ BasicGame.Game = function (game) {
     this.submit_button;
     this.submit_boolean; 
 
+    this.timer_text;
+
 };
 
 var health;
 var record_actions;
 var record;
 var record_counter;
+var gametimer;
 
 socket.on('health', function(userhealth) {
 
@@ -57,10 +60,13 @@ socket.on('record-actions', function(data) {
 
     record_actions = data;
     record = true;
-    record_counter = 0;
+    //record_counter = RESULTS_TIME;
     console.log("Actions Recieved");
 
 });
+
+socket.on('Gamecountdown', function(time){ gametimer = time; });
+socket.on('Resultscountdown', function(time) { record_counter = time; });  
 
 
 BasicGame.Game.prototype = {
@@ -89,6 +95,7 @@ BasicGame.Game.prototype = {
 
         health = { "self":100, 0:100, 1:100, 2:100};
         record = false;
+        gametimer = GAME_TIME;
 
         // Background
         this.gameBackground = this.add.sprite(0,0,'gameBackground');
@@ -314,16 +321,20 @@ BasicGame.Game.prototype = {
         this.kingdom_names[3] = this.add.text(730, 300, otherusers[2] + ": " + health[2], { font: "32px Arial", fill: "#000000" });
         this.kingdom_names[3].anchor = new Phaser.Point(0.5, 0.5);
         this.kingdom_names[3].rotation = -Math.PI/2;
+
+        // Display timer
+        this.timer_text = this.add.text(20,20, gametimer, {font: "32px Arial", fill: "#FFFFFF" });
     },
 
     update: function () {
 
         //  Honestly, just about anything could go here. It's YOUR game after all. Eat your heart out!
         
-        if (record && record_counter < 100)
+        if (record && (record_counter > 0))
         {
             // Remove the submit button
             this.submit_button.visible = false;
+            this.timer_text.setText(record_counter);
 
             // i represents other user "global" position
             for (var i = 0; i < 3; i++)
@@ -355,10 +366,8 @@ BasicGame.Game.prototype = {
             this.kingdom_names[2].setText(otherusers[1] + ": " + health[1]);
             this.kingdom_names[3].setText(otherusers[2] + ": " + health[2]);
 
-            record_counter++;
-
         }
-        else if (record_counter == 100)
+        else if (record_counter <= 0)
         {
             for (var k = 0; k < 9; k++)
             {
@@ -380,8 +389,19 @@ BasicGame.Game.prototype = {
                 this.defend_buttons[k].tint = 0x794044;
             }
 
-            record_counter = 0;
+            record_counter = RESULTS_TIME;
             record = false;
+            gametimer = GAME_TIME;
+            this.timer_text.setText(gametimer);
+            socket.emit("startGameTimer", GAME_TIME);
+        }
+        else
+        {
+            this.timer_text.setText(gametimer);
+            if (gametimer <= 0)
+            {
+                this.submit();
+            }
         }
 
     },

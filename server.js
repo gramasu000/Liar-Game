@@ -31,6 +31,10 @@ var who_set_actions = {};
 var health = {};
 var actions = {};
 
+// Constant Values - MUST MATCH THE SAME NAME ON SCRIPT FILE
+var GAME_TIME = 150;
+var RESULTS_TIME = 15;
+
 // Set the parameters
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
@@ -48,27 +52,52 @@ var server = http.createServer(app);
 var io = require('socket.io').listen(server);
 server.listen(3000);
 
+var gamecount = {};
+
+// If everyone submits before timer runs out
+var presubmit = {};
+
 function GameCountDown(time, room) {
 	var timeLeft = time;
-	countdown = setInterval(function(){
+	
+	var countdown = setInterval(function(){
 		io.to(room).emit('Gamecountdown', timeLeft);
 		timeLeft--;
+		if ((timeLeft < 0) || (presubmit[room])){
+			clearInterval(countdown);
+			ResultsCountDown(RESULTS_TIME, room);
+			gamecount[room] = false;
+			presubmit[room] = false;
+		}
 	},1000)
-	if (timeLeft <= 0){
-		clearInterval(countdown);
-	}
+
+}
+
+function ResultsCountDown(time, room) {
+	var timeLeft = time;
+	var countdown = setInterval(function(){
+		io.to(room).emit('Resultscountdown', timeLeft);
+		timeLeft--;
+		if (timeLeft < 0){
+			clearInterval(countdown);
+			GameCountDown(GAME_TIME, room);
+			gamecount[room] = true;
+			presubmit[room] = false;
+		}
+	},1000)
+
 }
 
 function startCountdown(time,room){
 	var timeLeft = time;
-	countdown = setInterval(function(){
+	var countdown = setInterval(function(){
 		io.to(room).emit('countdownTimer',timeLeft);
 		timeLeft--;
-	},1000)
-	if (timeLeft <= 0){
+	if (timeLeft < 0){
 		clearInterval(countdown);
 		console.log("Game in room " + room + " has started!");
-	}
+		}
+	},1000)
 }
 
 //Helper function to see if room exists
@@ -120,6 +149,8 @@ io.sockets.on('connection', function (socket) {
 			socketIDs[roomName][0] = socket.id;
 			who_set_pseudo[roomName] = [false, false, false, false];
 			who_set_actions[roomName] = [false, false, false, false];
+			gamecount[roomName] = false;
+			presubmit[roomName] = false;
 			console.log("user " + socket.id + " has hosted room " + roomName);
 			socket.broadcast.emit('createRoomButton',roomName);
 			io.to(socket.id).emit('roomApproved',{'approved' : true, 'name' : roomName});
@@ -209,6 +240,15 @@ io.sockets.on('connection', function (socket) {
 		}
 	});
 
+	socket.on('startGameTimer', function (num) {
+		var roomName = clients[socket.id];
+		if (!gamecount[roomName])
+		{
+			GameCountDown(num, roomName);
+			gamecount[roomName] = true;
+		}
+	})
+
 	// Obtaining actions a player has taken
 	socket.on('actions', function(data) {
 		var id = data['id'];
@@ -223,6 +263,7 @@ io.sockets.on('connection', function (socket) {
 
 		if (who_set_actions[roomName][0] && who_set_actions[roomName][1] && who_set_actions[roomName][2] && who_set_actions[roomName][3])
 		{
+			presubmit[roomName] = true;
 			for (var j = 0; j < rooms[roomName]; j++)
 			{
 				var init_decrease = 0;
