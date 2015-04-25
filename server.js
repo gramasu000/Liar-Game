@@ -7,6 +7,11 @@ app = express();
 // Create an HTTP object
 http = require('http');
 
+var server = http.createServer(app);
+
+// Create a socket.io object
+var io = require('socket.io').listen(server);
+
 //List of all room names that keep track of number of players
 var rooms = {};
 
@@ -50,11 +55,9 @@ app.get('/', function(req, res){
   res.render('home.html');
 });
 
-var server = http.createServer(app);
-
-// Create a socket.io object
-var io = require('socket.io').listen(server);
-server.listen(3000);
+server.listen(app.get('port'), app.get('ipaddr'), function(){
+	console.log('Express server listening on  IP: ' + app.get('ipaddr') + ' and port ' + app.get('port'));
+});
 
 // Is the game phase running?
 var gamecount = {};
