@@ -2,4 +2,4 @@ Liar Game
 
 A social engineering game
 
-http://liargame-acgr.rhcloud.com/
+http://liargame-akgr.rhcloud.com/
