@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ackei/Liar-Game.git"
+    "url": "https://github.com/gramasu000/Liar-Game"
   },
   "keywords": [
     "liar",
@@ -24,7 +24,7 @@
     "node": ">= 0.6.0",
     "npm": ">= 1.0.0"
   },
-  "homepage": "https://github.com/ackei/Liar-Game",
+  "homepage": "https://github.com/gramasu000/Liar-Game",
   "dependencies": {
     "ejs": "^2.3.1",
     "express": "^4.12.3",
