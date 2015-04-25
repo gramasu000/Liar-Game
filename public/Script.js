@@ -1,4 +1,4 @@
-var socket = io.connect();
+var socket = io.connect("http://liargame-acke.rhcloud.com:8000");
 
 var self = null;
 var otherusers = [];
