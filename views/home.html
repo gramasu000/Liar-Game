@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Liar Game!</title>
+		<script src="libs/jquery.min.js"></script>
+		<script src="/socket.io/socket.io.js"></script>
+		<script src="libs/phaser.min.js"></script>
+		<script src="Script.js"></script>
+		<script src="game/Boot.js"></script>
+		<script src="game/Preloader.js"></script>
+		<script src="game/MainMenu.js"></script>
+		<script src="game/HostRoom.js"></script>
+		<script src="game/JoinRoom.js"></script>
+		<script src="game/WaitingRoom.js"></script>
+		<script src="game/WaitingRoom2.js"></script>
+		<script src="game/SetPseudo.js"></script>
+		<script src="game/Game.js"></script>
+		<link rel="stylesheet" type="text/css" href="styles/style.css">
+	</head>
+	<body>
+		<div class="wrap">	
+			<div id="gameContainer">
+				<script type="text/javascript">
+					// Used window onload function
+					var game;
+					window.onload = function() {
+						game = new Phaser.Game(800, 600, Phaser.AUTO, 'gameContainer');
+						game.state.add('Boot', BasicGame.Boot);
+						game.state.add('Preloader', BasicGame.Preloader);
+						game.state.add('MainMenu', BasicGame.MainMenu);
+						game.state.add('HostRoom', BasicGame.HostRoom);
+						game.state.add('JoinRoom', BasicGame.JoinRoom);
+						game.state.add('WaitingRoom', BasicGame.WaitingRoom);
+						game.state.add('WaitingRoom2', BasicGame.WaitingRoom2);
+						game.state.add('SetPseudo', BasicGame.SetPseudo);
+						game.state.add('Game', BasicGame.Game);
+
+						game.state.start('Boot');
+					};
+				</script>
+				<input type='text' id="pseudoInput" class="pseudo"></input>
+				<button id="pseudoSet" class="pseudo">Enter Name</button>
+				<input type='text' id="hostRoomInput" class="hRoom"></input>
+				<button id="hostRoom" class="hRoom">Enter Game Name</button>
+				<input type='text' id="joinRoomInput" class="jRoom"></input>
+				<button id="joinRoom" class="jRoom">Enter Game Name</button>
+			</div>
+			<div id="chatContainer">
+				<header>
+					<h1>Chat</h1>
+				</header>
+				<div id="chatEntries"></div>
+				<div id="chatControls"> 
+					<input type='text' id="messageInput"></input>
+					<button id="submit">Send</button>
+				</div>
+				<div id="otheruser"></div>
+					
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
