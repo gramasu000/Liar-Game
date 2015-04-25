@@ -7,7 +7,7 @@ app = express();
 // Create an HTTP object
 http = require('http');
 
-var SampleApp() = function(){
+var SampleApp = function(){
 	//List of all room names that keep track of number of players
 	var rooms = {};
 
