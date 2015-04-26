@@ -138,7 +138,7 @@ io.sockets.on('connection', function (socket) {
     	socket.pseudo = data['pseudo'];
     	health[socket.id] = MAX_HEALTH;
     	IDtoPseudo[socket.id] = socket.pseudo;
-      	io.to(clients[socket.id]).emit('setPseudo', data);
+    	who_set_pseudo[clients[socket.id]][clientPlayers[socket.id]] = true;
 	});
 
 	// Obtaining a sent message event
@@ -244,12 +244,17 @@ io.sockets.on('connection', function (socket) {
 	});
 
 	socket.on('startTimer', function(timer) {
-		who_set_pseudo[clients[socket.id]][clientPlayers[socket.id]] = true;
+
 		if (who_set_pseudo[clients[socket.id]][0] && 
 			who_set_pseudo[clients[socket.id]][1] && 
 			who_set_pseudo[clients[socket.id]][2] && 
 			who_set_pseudo[clients[socket.id]][3])
 		{
+			var roomName = clients[socket.id];
+			for (var i = 0; i < 4; i++)
+			{
+				io.to(roomName).emit('setPseudo', IDtoPseudo[socketIDs[roomName][i]]);
+			}
 			startCountdown(10, clients[socket.id]);
 		}
 	});

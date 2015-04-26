@@ -88,10 +88,10 @@ socket.on('gameStart', function(data){
 });
 
 socket.on('setPseudo', function(data) {
-    if (data['pseudo'] != self)
+    if (data != self)
     {
-        otherusers.push(data['pseudo']);
-        $("#otheruser").append('<div><input type="radio" id="'+ data['pseudo'] + '" name="recipient" value="'+ data['pseudo'] +'">' + data['pseudo'] + '</div>');    
+        otherusers.push(data);
+        $("#otheruser").append('<div><input type="radio" id="'+ data + '" name="recipient" value="'+ data +'">' + data + '</div>');    
     }
 });
 
