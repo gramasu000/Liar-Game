@@ -307,7 +307,7 @@ BasicGame.Game.prototype = {
         this.attack_buttons[2].tint = 0x794044;
 
         // Submit Button
-        this.submit_button = this.add.button(400,270, 'submit', this.submit, this);
+        this.submit_button = this.add.button(400,270, 'submit', this.submit, this, 1,1,0);
         this.submit_button.width = 200;
         this.submit_button.height = 100;
         this.submit_button.anchor = new Phaser.Point(0.5, 0.5); 
