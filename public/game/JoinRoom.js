@@ -20,8 +20,9 @@ socket.on('createRoomButton',function(name){
 });
 
 socket.on('initializeRoomButtons',function(rooms){
-	for (var i = 0; i < Object.keys(rooms).length; i++) {
-		var name = Object.keys(rooms)[i];
+	var roomList = Object.keys(rooms);
+	for (var i = 0; i < roomList.length; i++) {
+		var name = roomList[i];
 		listOfGames[i] = name;
 		numPlayerInGame[name] = rooms[name];
 	};
@@ -120,9 +121,9 @@ BasicGame.JoinRoom.prototype = {
 	},
 
 	update: function () {
+		console.log(listOfGames);
 		for (var i = 0; i < numGamesPossible; i++) {
 			if (listOfGames[i] != ''){
-				//console.log(this.roomButtons);
 				this.roomButtons[i].setRoomName(listOfGames[i]);
 				this.roomButtons[i].setPlayerNumber(numPlayerInGame[listOfGames[i]]);
 				this.roomButtons[i].visible = true;
