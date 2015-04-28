@@ -1,3 +1,4 @@
+#!/bin/env node
 // Create a EJS object
 var ejs = require('ejs');
 // Create a Express JS server object
@@ -5,6 +6,11 @@ var express = require('express');
 app = express();
 // Create an HTTP object
 http = require('http');
+
+var server = http.createServer(app);
+
+// Create a socket.io object
+var io = require('socket.io').listen(server);
 
 //List of all room names that keep track of number of players
 var rooms = {};
@@ -40,6 +46,8 @@ var MAX_HEALTH = 20;
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 app.set("view options", { layout: false });
+app.set('port', process.env.OPENSHIFT_NODEJS_PORT || 3000);  
+app.set('ipaddr', process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1");
 app.use(express.static(__dirname + '/public'));
 app.engine('html', ejs.renderFile);
 
@@ -47,11 +55,9 @@ app.get('/', function(req, res){
   res.render('home.html');
 });
 
-var server = http.createServer(app);
-
-// Create a socket.io object
-var io = require('socket.io').listen(server);
-server.listen(3000);
+server.listen(app.get('port'), app.get('ipaddr'), function(){
+	console.log('Express server listening on  IP: ' + app.get('ipaddr') + ' and port ' + app.get('port'));
+});
 
 // Is the game phase running?
 var gamecount = {};

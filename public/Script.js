@@ -1,10 +1,10 @@
-var socket = io.connect();
+var socket = io.connect("http://liargame-akgr.rhcloud.com:8000");
 
 var self = null;
 var otherusers = [];
 var num_messages = 0;
 
-// Constant Values - MUST MATCH THE SAME NAME ON SCRIPT FILE
+// Constant Values - MUST MATCH THE SAME NAME ON SERVER FILE
 var GAME_TIME = 150;
 var RESULTS_TIME = 15;
 var MAX_HEALTH = 20;
