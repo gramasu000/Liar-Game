@@ -51,6 +51,8 @@ BasicGame.WaitingRoom.prototype = {
 	backToMainMenu: function(){
 		$('#joinRoomInput').hide();
         $('#joinRoom').hide();
+        $('#joinRoomInput').val('');
+        $('#hostRoomInput').val('');
         socket.emit('exitRoom',this.roomName);
 		this.state.start('MainMenu');
 	}
