@@ -37,6 +37,15 @@ var who_set_actions = {};
 var health = {};
 var actions = {};
 
+// Is the game phase running?
+var gamecount = {};
+
+// If everyone submits before timer runs out
+var presubmit = {};
+
+// If game is running
+var gamerunning = {};
+
 // Constant Values - MUST MATCH THE SAME NAME ON SCRIPT FILE
 var GAME_TIME = 150;
 var RESULTS_TIME = 15;
@@ -58,15 +67,6 @@ app.get('/', function(req, res){
 server.listen(app.get('port'), app.get('ipaddr'), function(){
 	console.log('Express server listening on  IP: ' + app.get('ipaddr') + ' and port ' + app.get('port'));
 });
-
-// Is the game phase running?
-var gamecount = {};
-
-// If everyone submits before timer runs out
-var presubmit = {};
-
-// If game is running
-var gamerunning = {};
 
 function GameCountDown(time, room) {
 	var timeLeft = time;
