@@ -282,7 +282,10 @@ io.sockets.on('connection', function (socket) {
 
 		//console.log('User ' + socket.pseudo  + "," + i + ' submitted actions. ' + (actions[roomName].length-1));
 
-		if (who_set_actions[roomName][0] && who_set_actions[roomName][1] && who_set_actions[roomName][2] && who_set_actions[roomName][3])
+		if ((who_set_actions[roomName][0] || health[socketIDs[roomName][0]] <= 0) 
+			&& (who_set_actions[roomName][1] || health[socketIDs[roomName][1]] <= 0)
+			&& (who_set_actions[roomName][2] || health[socketIDs[roomName][2]] <= 0) 
+			&& (who_set_actions[roomName][3] || health[socketIDs[roomName][3]] <= 0))
 		{
 			presubmit[roomName] = true;
 			for (var j = 0; j < rooms[roomName]; j++)
@@ -414,6 +417,7 @@ io.sockets.on('connection', function (socket) {
 
 	socket.on('gameEnd', function (data) {
 		gamerunning[clients[socket.id]] = data;
+		io.to(clients[socket.id]).emit('gameOver');
 	}); 
 
 	//Alerts when someone disconnects

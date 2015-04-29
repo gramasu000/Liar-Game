@@ -44,6 +44,8 @@ BasicGame.Game = function (game) {
     this.win_text;
     this.lose_text;
 
+    this.backButton;
+
 };
 
 var health = {};
@@ -68,7 +70,11 @@ socket.on('record-actions', function(data) {
 });
 
 socket.on('Gamecountdown', function(time){ gametimer = time; });
-socket.on('Resultscountdown', function(time) { record_counter = time; });  
+socket.on('Resultscountdown', function(time) { record_counter = time; }); 
+
+socket.on('gameOver',function(){
+
+});
 
 
 BasicGame.Game.prototype = {
@@ -310,7 +316,7 @@ BasicGame.Game.prototype = {
         this.submit_button = this.add.button(400,270, 'submit', this.submit, this, 1,1,0);
         this.submit_button.width = 200;
         this.submit_button.height = 100;
-        this.submit_button.anchor = new Phaser.Point(0.5, 0.5); 
+        this.submit_button.anchor = new Phaser.Point(0.5, 0.5);
 
         // Display Your Name
         this.kingdom_names[0] = this.add.text(400, 530, self + ": " + health["self"], { font: "32px Arial", fill: "#000000" });
@@ -408,7 +414,8 @@ BasicGame.Game.prototype = {
             if ((health[0] <= 0) && (health[1] <= 0) && (health[2] <= 0) && (health["self"] > 0))
             {
                 this.win_text = this.add.text(400, 270, "You Win!", {font: "32px Arial", fill: "#FFFFFF" });
-                this.win_text.anchor = new Phaser.Point(0.5, 0.5);   
+                this.win_text.anchor = new Phaser.Point(0.5, 0.5);
+                this.backButton = this.add.button(30,500,'backButton',this.backToMainMenu,this);
             }
             // If you are alive, set the submit boolean to false so you can submit your moves 
             // for the next turn
@@ -424,6 +431,7 @@ BasicGame.Game.prototype = {
                 this.submit();
                 this.lose_text = this.add.text(400, 270, "You Lose!", {font: "32px Arial", fill: "#FFFFFF" });
                 this.lose_text = new Phaser.Point(0.5,0.5);
+                this.backButton = this.add.button(30,500,'backButton',this.backToMainMenu,this);
             }
 
         }
@@ -436,6 +444,10 @@ BasicGame.Game.prototype = {
             }
         }
 
+    },
+
+    backToMainMenu: function(){
+        this.state.start('MainMenu');
     },
 
     attack0: function () {
