@@ -10,9 +10,3 @@ Pro Tip: The player who who most uses the chatbox to their advantage controls th
 
 Please go to the following link to begin playing. You will need a total of 4 players.
 http://liargame-akgr.rhcloud.com/
-
-NOTE:
-In order to play this game on a local server, you must change line 1 on the Script.js file to read
-... io.connect();
-instead of
-... io.connect("http://liargame-akgr.rhcloud.com:8000");
