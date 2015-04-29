@@ -24,9 +24,9 @@ BasicGame.HostRoom.prototype = {
 	},
 
 	backToMainMenu: function(){
+		$("#hostRoomInput").val('');
 		$("#hostRoomInput").hide();
 		$("#hostRoom").hide();
-		$("#hostRoomInput").val('');
 		this.state.start('MainMenu');
 	}
 

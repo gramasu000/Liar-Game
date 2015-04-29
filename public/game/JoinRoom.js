@@ -140,9 +140,9 @@ BasicGame.JoinRoom.prototype = {
 	},
 
 	backToMainMenu: function(){
+		$('#joinRoomInput').val('');
 		$('#joinRoomInput').hide();
         $('#joinRoom').hide();
-        $('#joinRoomInput').val('');
 		this.state.start('MainMenu');
 	}
 };
