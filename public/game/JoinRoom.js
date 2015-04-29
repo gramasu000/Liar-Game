@@ -140,6 +140,7 @@ BasicGame.JoinRoom.prototype = {
 	},
 
 	backToMainMenu: function(){
+		$('#joinRoomInput').val('');
 		$('#joinRoomInput').hide();
         $('#joinRoom').hide();
 		this.state.start('MainMenu');
