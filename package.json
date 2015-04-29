@@ -1,7 +1,7 @@
 {
   "name": "liar-game",
   "version": "1.0.0",
-  "description": "\"social engineering game\"",
+  "description": "social engineering game",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -24,7 +24,7 @@
     "node": ">= 0.6.0",
     "npm": ">= 1.0.0"
   },
-  "homepage": "https://github.com/gramasu000/Liar-Game",
+  "homepage": "liargame-akgr.rhcloud.com",
   "dependencies": {
     "ejs": "^2.3.1",
     "express": "^4.12.3",
