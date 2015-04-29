@@ -142,6 +142,7 @@ BasicGame.JoinRoom.prototype = {
 	backToMainMenu: function(){
 		$('#joinRoomInput').hide();
         $('#joinRoom').hide();
+        $('#joinRoomInput').val('');
 		this.state.start('MainMenu');
 	}
 };
