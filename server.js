@@ -145,7 +145,7 @@ io.sockets.on('connection', function (socket) {
 	socket.on('message', function (message) {
     	var data = { 'message' : message[0], 'pseudo' : socket.pseudo, 'recipient' : message[1]};
     	io.to(clients[socket.id]).emit('message', data);
-    	console.log("user " + socket.pseudo + " sent to user " + message[1] + ": " + message[0]);
+    	//console.log("user " + socket.pseudo + " sent to user " + message[1] + ": " + message[0]);
 	});
 
 	//Hosting a room
@@ -280,7 +280,7 @@ io.sockets.on('connection', function (socket) {
 		actions[roomName][i] = data;
 		who_set_actions[roomName][i] = true;
 
-		console.log('User ' + socket.pseudo  + "," + i + ' submitted actions. ' + (actions[roomName].length-1));
+		//console.log('User ' + socket.pseudo  + "," + i + ' submitted actions. ' + (actions[roomName].length-1));
 
 		if (who_set_actions[roomName][0] && who_set_actions[roomName][1] && who_set_actions[roomName][2] && who_set_actions[roomName][3])
 		{
@@ -297,7 +297,7 @@ io.sockets.on('connection', function (socket) {
 				}
 				health[socketIDs[roomName][j]] -= init_decrease;
 
-				console.log(init_decrease);
+				//console.log(init_decrease);
 
 				if (health[socketIDs[roomName][j]] < 0)
 					health[socketIDs[roomName][j]] = 0;
@@ -378,7 +378,7 @@ io.sockets.on('connection', function (socket) {
 				health[socketIDs[roomName][2]] -=  3;
 			}
 
-			console.log("Sending Health and Actions");
+			//console.log("Sending Health and Actions");
 
 			var userhealth_0 = {"self": health[socketIDs[roomName][0]], 0: health[socketIDs[roomName][1]], 
 								1: health[socketIDs[roomName][2]], 2: health[socketIDs[roomName][3]] };
