@@ -132,7 +132,16 @@ function roomExists(room) {
 };
 
 function handleDisconnect(socket,state){
-	if (state = "WaitingRoom"){
+	if (state == "MainMenu"){
+		console.log("user " + socket.id + " has disconnected from main menu");
+	}
+	if (state == "HostRoom"){
+		console.log("user " + socket.id + " has disconnected from host room");	
+	}
+	if (state == "JoinRoom"){
+		console.log("user " + socket.id + " has disconnected from join room");	
+	}
+	if (state == "WaitingRoom"){
 		console.log("user " + socket.id + " has exited room " + roomName);
 		socket.leave(roomName);
 		socket.broadcast.emit('updateRoomButtons',{'increase' : false, 'name' : roomName});
@@ -145,6 +154,7 @@ function handleDisconnect(socket,state){
 			delete socketIDs[roomName];
 			delete clients[roomName];
 			delete clientPlayers[socket.id];
+			delete socketStates[socket.id];
 		}
 		else{
 			var index = clientPlayers[socket.id];
@@ -453,12 +463,6 @@ io.sockets.on('connection', function (socket) {
 
 	//Alerts when someone disconnects
 	socket.on('disconnect', function(){
-		console.log('user ' + socket.id + ' disconnected');
-		rooms[clients[socket.id]]--;
-		if (rooms[clients[socket.id]] <= 0){
-			delete rooms[clients[socket.id]];
-		}
-		delete clients[socket.id];
-		delete clientPlayers[socket.id];
+		this.handleDisconnect(socket,socketStates[socket.id]);
 	});
 });
