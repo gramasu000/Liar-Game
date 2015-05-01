@@ -43,6 +43,9 @@ var actions = {};
 // Is the game phase running?
 var gamecount = {};
 
+//Is the pseudo name phase running?
+var pseudocount = {};
+
 // If everyone submits before timer runs out
 var presubmit = {};
 
@@ -53,6 +56,7 @@ var gamerunning = {};
 var GAME_TIME = 150;
 var RESULTS_TIME = 15;
 var MAX_HEALTH = 20;
+var PSEUDO_TIME = 30;
 
 // Set the parameters
 app.set('views', __dirname + '/views');
@@ -121,6 +125,19 @@ function startCountdown(time,room){
 	},1000)
 }
 
+function startPseudoCountdown(time,room){
+	var timeLeft = time;
+	var countdown = setInterval(function(){
+		io.to(room).emit('pseudoTimer',timeLeft);
+		timeLeft--;
+		console.log("Time decremented");
+		if (timeLeft < 0){
+			clearInterval(countdown);
+			console.log("WaitingRoom2 started in room " + room);
+		}
+	},1000)
+}
+
 //Helper function to see if room exists
 function roomExists(room) {
 	for (var i = Object.keys(rooms).length - 1; i >= 0; i--) {
@@ -135,13 +152,13 @@ function handleDisconnect(socket,state){
 	if (state == "MainMenu"){
 		console.log("user " + socket.id + " has disconnected from main menu");
 	}
-	if (state == "HostRoom"){
+	else if (state == "HostRoom"){
 		console.log("user " + socket.id + " has disconnected from host room");	
 	}
-	if (state == "JoinRoom"){
+	else if (state == "JoinRoom"){
 		console.log("user " + socket.id + " has disconnected from join room");	
 	}
-	if (state == "WaitingRoom"){
+	else if (state == "WaitingRoom"){
 		console.log("user " + socket.id + " has exited room " + roomName);
 		socket.leave(roomName);
 		socket.broadcast.emit('updateRoomButtons',{'increase' : false, 'name' : roomName});
@@ -178,6 +195,24 @@ function handleDisconnect(socket,state){
 
 		}
 	}
+	else if (state == "WaitingRoom2" && state == "SetPseudo"){
+		console.log("user " + socket.id + " has exited room " + roomName);
+		socket.leave(roomName);
+		io.to(roomName).emit('kickedOut')
+		rooms[roomName]--;
+		var data = 4 - rooms[roomName];
+		io.to(roomName).emit('playerCount',data);
+		socket.broadcast.emit('deleteRoomButton',roomName);
+		delete rooms[roomName];
+		delete socketIDs[roomName];
+		delete clients[roomName];
+		delete clientPlayers[socket.id];
+		delete socketStates[socket.id];
+		delete health[socket.id];
+    	delete IDtoPseudo[socket.id];
+    	delete who_set_pseudo[clients[socket.id]][clientPlayers[socket.id]];
+	}
+
 
 };
 
@@ -215,18 +250,23 @@ io.sockets.on('connection', function (socket) {
 			console.log("Room with same name already exists!");
 		}
 		else if (Object.keys(rooms).length < 10) {
+			//Initialize non-boolean maps
 			rooms[roomName] = 1;
 			clients[socket.id] = roomName;
 			clientPlayers[socket.id] = 0;
 			socketIDs[roomName] = [];
 			socketIDs[roomName][0] = socket.id;
+
+			//Initialize boolean maps
 			who_set_pseudo[roomName] = [false, false, false, false];
 			who_set_actions[roomName] = [false, false, false, false];
+			pseudocount[roomName] = false;
 			gamecount[roomName] = false;
 			presubmit[roomName] = false;
+
 			console.log("user " + socket.id + " has hosted room " + roomName);
 			socket.broadcast.emit('createRoomButton',roomName);
-			io.to(socket.id).emit('roomApproved',{'approved' : true, 'name' : roomName});
+			io.to(socket.id).emit('roomApproved',{'approved' : true, 'name' : roomName, 'position' : clientPlayers[socket.id]});
 			io.to(socket.id).emit('playerCount',3);
 			socket.join(roomName);
 			socketStates[socket.id] = "WaitingRoom";
@@ -252,7 +292,7 @@ io.sockets.on('connection', function (socket) {
 			io.to(roomName).emit('playerCount',data);
 			socket.broadcast.emit('updateRoomButtons',{'name' : roomName, 'increase' : true});
 			console.log("user " + socket.id + " has joined room " + roomName);
-			io.to(socket.id).emit('roomApproved',{'approved' : true, 'name' : roomName});
+			io.to(socket.id).emit('roomApproved',{'approved' : true, 'name' : roomName, 'position' : clientPlayers[socket.id]});
 			socketStates[socket.id] = "WaitingRoom";
 
 		}
@@ -268,7 +308,7 @@ io.sockets.on('connection', function (socket) {
 
 	socket.on('exitRoom',function(roomName){
 		
-		this.handleDisconnect(socket,"ExitRoom");
+		handleDisconnect(socket,"ExitRoom");
 
 	});
 
@@ -296,7 +336,17 @@ io.sockets.on('connection', function (socket) {
 			gamerunning[roomName] = true;
 			GameCountDown(num, roomName);
 		}
-	})
+	});
+
+	socket.on('startPseudoTimer',function (num){
+		var roomName = clients[socket.id];
+		if (!pseudocount[roomName]){
+			console.log("Hi");
+			pseudocount[roomName] = true;
+
+			startPseudoCountdown(num,roomName);
+		}
+	});
 
 	// Obtaining actions a player has taken
 	socket.on('actions', function(data) {
@@ -463,6 +513,6 @@ io.sockets.on('connection', function (socket) {
 
 	//Alerts when someone disconnects
 	socket.on('disconnect', function(){
-		this.handleDisconnect(socket,socketStates[socket.id]);
+		handleDisconnect(socket,socketStates[socket.id]);
 	});
 });
