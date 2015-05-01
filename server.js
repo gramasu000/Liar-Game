@@ -500,9 +500,9 @@ io.sockets.on('connection', function (socket) {
 			
 			for (var i = 0; i < 4; i++)
 			{
-				if (health[socketIDs[roomName][j]] < 0)
+				if (health[socketIDs[roomName][i]] < 0)
 				{
-					health[socketIDs[roomName][j]] = 0;
+					health[socketIDs[roomName][i]] = 0;
 				}
 			}
 
