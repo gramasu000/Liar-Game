@@ -27,6 +27,9 @@ var socketIDs = {};
 //Map from socket IDs to pseudo names
 var IDtoPseudo = {};
 
+//Map from socket IDs to state in the game
+var socketStates = {};
+
 // Who among all players set pseudo
 var who_set_pseudo = {};
 
@@ -107,9 +110,13 @@ function startCountdown(time,room){
 	var countdown = setInterval(function(){
 		io.to(room).emit('countdownTimer',timeLeft);
 		timeLeft--;
-	if (timeLeft < 0){
-		clearInterval(countdown);
-		console.log("Game in room " + room + " has started!");
+		if (timeLeft < 0){
+			clearInterval(countdown);
+			console.log("Game in room " + room + " has started!");
+			for (var i = 0; i < 4; ++i){
+				var temp = socketIDs[room][i];
+				socketStates[temp] = "Game";
+			}
 		}
 	},1000)
 }
@@ -124,88 +131,8 @@ function roomExists(room) {
 	return false;
 };
 
-// Connection event
-io.sockets.on('connection', function (socket) {
-	console.log('user ' + socket.id + ' connected');
-	
-	//Initialize room buttons every time someone requests to join game
-	socket.on('initializeRooms', function(){
-		io.to(socket.id).emit('initializeRoomButtons',rooms);
-	});
-
-	// SetPseudo event
-	socket.on('setPseudo', function (data) {
-    	socket.pseudo = data['pseudo'];
-    	health[socket.id] = MAX_HEALTH;
-    	IDtoPseudo[socket.id] = socket.pseudo;
-    	who_set_pseudo[clients[socket.id]][clientPlayers[socket.id]] = true;
-	});
-
-	// Obtaining a sent message event
-	socket.on('message', function (message) {
-    	var data = { 'message' : message[0], 'pseudo' : socket.pseudo, 'recipient' : message[1]};
-    	io.to(clients[socket.id]).emit('message', data);
-    	console.log("user " + socket.pseudo + " sent to user " + message[1] + ": " + message[0]);
-	});
-
-	//Hosting a room
-	//NOTE: Need to implement error handling stuff
-	socket.on('host', function(roomName){
-		if (roomExists(roomName)){
-			io.to(socket.id).emit('roomApproved',{'approved' : false, 'name' : roomName});
-			console.log("Room with same name already exists!");
-		}
-		else if (Object.keys(rooms).length < 10) {
-			rooms[roomName] = 1;
-			clients[socket.id] = roomName;
-			clientPlayers[socket.id] = 0;
-			socketIDs[roomName] = [];
-			socketIDs[roomName][0] = socket.id;
-			who_set_pseudo[roomName] = [false, false, false, false];
-			who_set_actions[roomName] = [false, false, false, false];
-			gamecount[roomName] = false;
-			presubmit[roomName] = false;
-			console.log("user " + socket.id + " has hosted room " + roomName);
-			socket.broadcast.emit('createRoomButton',roomName);
-			io.to(socket.id).emit('roomApproved',{'approved' : true, 'name' : roomName});
-			io.to(socket.id).emit('playerCount',3);
-			socket.join(roomName);
-		}
-		else{
-			io.to(socket.id).emit('roomApproved',{'approved' : false, 'name' : roomName});
-			console.log("Too many rooms currently active");
-		}
-	});
-
-	//Joining a room
-	//NOTE: Need to implement error handling stuff
-	socket.on('join', function(roomName){
-		if (roomExists(roomName) && rooms[roomName] < 4){
-			if (rooms[roomName] == 4){
-				console.log("Game is full");
-			}
-			socket.join(roomName);
-			clients[socket.id] = roomName;
-			clientPlayers[socket.id] = rooms[roomName]++;
-			socketIDs[roomName][clientPlayers[socket.id]] = socket.id;
-			var data = 4 - rooms[roomName];
-			io.to(roomName).emit('playerCount',data);
-			socket.broadcast.emit('updateRoomButtons',{'name' : roomName, 'increase' : true});
-			console.log("user " + socket.id + " has joined room " + roomName);
-			io.to(socket.id).emit('roomApproved',{'approved' : true, 'name' : roomName});
-
-		}
-		else if (rooms[roomName] >= 4){
-			console.log("Room " + roomName + " is full");
-			io.to(socket.id).emit('roomApproved',false);
-		}
-		else{
-			console.log("Room " + roomName + " does not exist");
-			io.to(socket.id).emit('roomApproved',false);
-		}
-	});
-
-	socket.on('exitRoom',function(roomName){
+function handleDisconnect(socket,state){
+	if (state = "WaitingRoom"){
 		console.log("user " + socket.id + " has exited room " + roomName);
 		socket.leave(roomName);
 		socket.broadcast.emit('updateRoomButtons',{'increase' : false, 'name' : roomName});
@@ -240,6 +167,98 @@ io.sockets.on('connection', function (socket) {
 			}
 
 		}
+	}
+
+};
+
+// Connection event
+io.sockets.on('connection', function (socket) {
+	console.log('user ' + socket.id + ' connected');
+	
+	//Initialize room buttons every time someone requests to join game
+	socket.on('initializeRooms', function(){
+		io.to(socket.id).emit('initializeRoomButtons',rooms);
+		socketStates[socket.id] = "JoinRoom";
+	});
+
+	// SetPseudo event
+	socket.on('setPseudo', function (data) {
+    	socket.pseudo = data['pseudo'];
+    	health[socket.id] = MAX_HEALTH;
+    	IDtoPseudo[socket.id] = socket.pseudo;
+    	who_set_pseudo[clients[socket.id]][clientPlayers[socket.id]] = true;
+    	socketStates[socket.id] = "WaitingRoom2";
+	});
+
+	// Obtaining a sent message event
+	socket.on('message', function (message) {
+    	var data = { 'message' : message[0], 'pseudo' : socket.pseudo, 'recipient' : message[1]};
+    	io.to(clients[socket.id]).emit('message', data);
+    	//console.log("user " + socket.pseudo + " sent to user " + message[1] + ": " + message[0]);
+	});
+
+	//Hosting a room
+	//NOTE: Need to implement error handling stuff
+	socket.on('host', function(roomName){
+		if (roomExists(roomName)){
+			io.to(socket.id).emit('roomApproved',{'approved' : false, 'name' : roomName});
+			console.log("Room with same name already exists!");
+		}
+		else if (Object.keys(rooms).length < 10) {
+			rooms[roomName] = 1;
+			clients[socket.id] = roomName;
+			clientPlayers[socket.id] = 0;
+			socketIDs[roomName] = [];
+			socketIDs[roomName][0] = socket.id;
+			who_set_pseudo[roomName] = [false, false, false, false];
+			who_set_actions[roomName] = [false, false, false, false];
+			gamecount[roomName] = false;
+			presubmit[roomName] = false;
+			console.log("user " + socket.id + " has hosted room " + roomName);
+			socket.broadcast.emit('createRoomButton',roomName);
+			io.to(socket.id).emit('roomApproved',{'approved' : true, 'name' : roomName});
+			io.to(socket.id).emit('playerCount',3);
+			socket.join(roomName);
+			socketStates[socket.id] = "WaitingRoom";
+		}
+		else{
+			io.to(socket.id).emit('roomApproved',{'approved' : false, 'name' : roomName});
+			console.log("Too many rooms currently active");
+		}
+	});
+
+	//Joining a room
+	//NOTE: Need to implement error handling stuff
+	socket.on('join', function(roomName){
+		if (roomExists(roomName) && rooms[roomName] < 4){
+			if (rooms[roomName] == 4){
+				console.log("Game is full");
+			}
+			socket.join(roomName);
+			clients[socket.id] = roomName;
+			clientPlayers[socket.id] = rooms[roomName]++;
+			socketIDs[roomName][clientPlayers[socket.id]] = socket.id;
+			var data = 4 - rooms[roomName];
+			io.to(roomName).emit('playerCount',data);
+			socket.broadcast.emit('updateRoomButtons',{'name' : roomName, 'increase' : true});
+			console.log("user " + socket.id + " has joined room " + roomName);
+			io.to(socket.id).emit('roomApproved',{'approved' : true, 'name' : roomName});
+			socketStates[socket.id] = "WaitingRoom";
+
+		}
+		else if (rooms[roomName] >= 4){
+			console.log("Room " + roomName + " is full");
+			io.to(socket.id).emit('roomApproved',false);
+		}
+		else{
+			console.log("Room " + roomName + " does not exist");
+			io.to(socket.id).emit('roomApproved',false);
+		}
+	});
+
+	socket.on('exitRoom',function(roomName){
+		
+		this.handleDisconnect(socket,"ExitRoom");
 
 	});
 
@@ -282,15 +301,30 @@ io.sockets.on('connection', function (socket) {
 
 		console.log('User ' + socket.pseudo  + "," + i + ' submitted actions. ' + (actions[roomName].length-1));
 
-		if (who_set_actions[roomName][0] && who_set_actions[roomName][1] && who_set_actions[roomName][2] && who_set_actions[roomName][3])
+		if ((who_set_actions[roomName][0] || health[socketIDs[roomName][0]] <= 0) 
+			&& (who_set_actions[roomName][1] || health[socketIDs[roomName][1]] <= 0)
+			&& (who_set_actions[roomName][2] || health[socketIDs[roomName][2]] <= 0) 
+			&& (who_set_actions[roomName][3] || health[socketIDs[roomName][3]] <= 0))
 		{
+			for (var i = 0; i < 4; ++i){
+				if (!who_set_actions[roomName][i]){
+					console.log("Player " + i + " has below 0 health");
+					actions[roomName][i] = {0: false, 
+									 		1: false, 
+                        			 		2: false, 
+                        			 		3: false, 
+                        			 		4: false,
+                        			 		5: false};
+				}
+			}
+
 			presubmit[roomName] = true;
 			for (var j = 0; j < rooms[roomName]; j++)
 			{
 				var init_decrease = 0;
 				for (var k = 0; k < 6; k++)
 				{
-					if (actions[roomName][j][k])
+					if (health[socketIDs[roomName][j]] > 0 && actions[roomName][j][k])
 					{
 						init_decrease++;
 					}
@@ -306,79 +340,79 @@ io.sockets.on('connection', function (socket) {
 			// Enumerate 12 possibilities
 
 			// If #0 attacked #1 and #1 did not defend and #0 is still alive after init_decrease
-			if (actions[roomName][0][0] && !actions[roomName][1][1] && (health[socketIDs[roomName][0]] > 0))
+			if ((health[socketIDs[roomName][0]] > 0) && actions[roomName][0][0] && !actions[roomName][1][1])
 			{
 				console.log("0 attacks 1");
 				health[socketIDs[roomName][1]] -= 3;
 			}
 			// If #1 attacked #0 and #0 did not defend and #1 is still alive after init_decrease
-			if (actions[roomName][1][0] && !actions[roomName][0][1] && (health[socketIDs[roomName][1]] > 0))
+			if ((health[socketIDs[roomName][1]] > 0) && actions[roomName][1][0] && !actions[roomName][0][1])
 			{
 				console.log("1 attacks 0");
 				health[socketIDs[roomName][0]] -= 3;
 			}
 			// If #0 attacked #2 and #2 did not defend and #0 is still alive after init_decrease
-			if (actions[roomName][0][2] && !actions[roomName][2][1] && (health[socketIDs[roomName][0]] > 0))
+			if ((health[socketIDs[roomName][0]] > 0) && actions[roomName][0][2] && !actions[roomName][2][1])
 			{
 				console.log("0 attacks 2");
 				health[socketIDs[roomName][2]] -= 3;
 			}
 			// If #2 attacked #0 and #0 did not defend and #2 is still alive after init_decrease
-			if (actions[roomName][2][0] && !actions[roomName][0][3] && (health[socketIDs[roomName][2]] > 0))
+			if ((health[socketIDs[roomName][2]] > 0) && actions[roomName][2][0] && !actions[roomName][0][3])
 			{
 				console.log("2 attacks 0");
 				health[socketIDs[roomName][0]] -= 3;
 			}
 			//If #0 attacked #3 and #3 did not defend and #0 is still alive after init_decrease
-			if (actions[roomName][0][4] && !actions[roomName][3][1] && (health[socketIDs[roomName][0]] > 0))
+			if ((health[socketIDs[roomName][0]] > 0) && actions[roomName][0][4] && !actions[roomName][3][1])
 			{
 				console.log("0 attacks 3");
 				health[socketIDs[roomName][3]] -= 3;
 			}
 			// If #3 attacked #0 and #0 did not defend and #3 is still alive after init_decrease
-			if (actions[roomName][3][0] && !actions[roomName][0][5] && (health[socketIDs[roomName][3]] > 0))
+			if ((health[socketIDs[roomName][3]] > 0) && actions[roomName][3][0] && !actions[roomName][0][5])
 			{
 				console.log("3 attacks 0");
 				health[socketIDs[roomName][0]] -= 3;
 			}
 			// If #1 attacked #2 and #2 did not defend and #1 is still alive after init_decrease
-			if (actions[roomName][1][2] && !actions[roomName][2][3] && (health[socketIDs[roomName][1]] > 0))
+			if ((health[socketIDs[roomName][1]] > 0) && actions[roomName][1][2] && !actions[roomName][2][3])
 			{
 				console.log("1 attacks 2");
 				health[socketIDs[roomName][2]] -=  3;
 			}
 			// If #2 attacked #1 and #1 did not defend and #2 is still alive after init_decrease
-			if (actions[roomName][2][2] && !actions[roomName][1][3] && (health[socketIDs[roomName][2]] > 0))
+			if ((health[socketIDs[roomName][2]] > 0) && actions[roomName][2][2] && !actions[roomName][1][3])
 			{
 				console.log("2 attacks 1");
 				health[socketIDs[roomName][1]] -=  3;
 			}
 			// If #1 attacked #3 and #3 did not defend and #1 is still alive after init_decrease
-			if (actions[roomName][1][4] && !actions[roomName][3][3] && (health[socketIDs[roomName][1]] > 0))
+			if ((health[socketIDs[roomName][1]] > 0) && actions[roomName][1][4] && !actions[roomName][3][3])
 			{
 				console.log("1 attacks 3");
 				health[socketIDs[roomName][3]] -=  3;
 			}
 			// If #3 attacked #1 and #1 did not defend and #3 is still alive after init_decrease
-			if (actions[roomName][3][2] && !actions[roomName][1][5] && (health[socketIDs[roomName][3]] > 0))
+			if ((health[socketIDs[roomName][3]] > 0) && actions[roomName][3][2] && !actions[roomName][1][5])
 			{
 				console.log("3 attacks 1");
 				health[socketIDs[roomName][1]] -=  3;
 			}
 			// If #2 attacked #3 and #3 did not defend and #2 is still alive after init_decrease
-			if (actions[roomName][2][4] && !actions[roomName][3][5] && (health[socketIDs[roomName][2]] > 0))
+			if ((health[socketIDs[roomName][2]] > 0) && actions[roomName][2][4] && !actions[roomName][3][5])
 			{
 				console.log("2 attacks 3");
 				health[socketIDs[roomName][3]] -=  3;
 			}
 			// If #3 attacked #2 and #2 did not defend and #3 is still alive after init_decrease
-			if (actions[roomName][3][4] && !actions[roomName][2][5] && (health[socketIDs[roomName][3]] > 0))
+			if ((health[socketIDs[roomName][3]] > 0) && actions[roomName][3][4] && !actions[roomName][2][5])
 			{
 				console.log("3 attacks 2");
 				health[socketIDs[roomName][2]] -=  3;
 			}
 
-			console.log("Sending Health and Actions");
+			//console.log("Sending Health and Actions");
 
 			var userhealth_0 = {"self": health[socketIDs[roomName][0]], 0: health[socketIDs[roomName][1]], 
 								1: health[socketIDs[roomName][2]], 2: health[socketIDs[roomName][3]] };
@@ -414,6 +448,7 @@ io.sockets.on('connection', function (socket) {
 
 	socket.on('gameEnd', function (data) {
 		gamerunning[clients[socket.id]] = data;
+		io.to(clients[socket.id]).emit('gameOver');
 	}); 
 
 	//Alerts when someone disconnects
