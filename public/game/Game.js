@@ -429,10 +429,26 @@ BasicGame.Game.prototype = {
             {
                 this.submit_button = false;
                 this.submit();
+                health["self"] = 0;
                 this.lose_text = this.add.text(400, 270, "You Lose!", {font: "32px Arial", fill: "#FFFFFF" });
                 this.lose_text = new Phaser.Point(0.5,0.5);
                 this.backButton = this.add.button(30,500,'backButton',this.backToMainMenu,this);
             }
+
+
+            if (health[0] <= 0)
+                health[0] = 0;
+            if (health[1] <= 0)
+                health[1] = 0;
+            if (health[2] <= 0)
+                health[2] = 0;
+            
+            // Update Health on Screen
+            this.kingdom_names[0].setText(self + ": " + health["self"]);
+            this.kingdom_names[1].setText(otherusers[0] + ": " + health[0]);
+            this.kingdom_names[2].setText(otherusers[1] + ": " + health[1]);
+            this.kingdom_names[3].setText(otherusers[2] + ": " + health[2]);
+
 
         }
         else

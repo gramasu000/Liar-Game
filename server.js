@@ -342,9 +342,6 @@ io.sockets.on('connection', function (socket) {
 				health[socketIDs[roomName][j]] -= init_decrease;
 
 				console.log(init_decrease);
-
-				if (health[socketIDs[roomName][j]] < 0)
-					health[socketIDs[roomName][j]] = 0;
 			}
 
 			// Enumerate 12 possibilities
@@ -450,6 +447,14 @@ io.sockets.on('connection', function (socket) {
 
 			actions[roomName] = [];
 			who_set_actions[roomName] = [false, false, false, false];	
+			
+			for (var i = 0; i < 4; i++)
+			{
+				if (health[socketIDs[roomName][j]] < 0)
+				{
+					health[socketIDs[roomName][j]] = 0;
+				}
+			}
 
 
 		}
@@ -463,6 +468,6 @@ io.sockets.on('connection', function (socket) {
 
 	//Alerts when someone disconnects
 	socket.on('disconnect', function(){
-		this.handleDisconnect(socket,socketStates[socket.id]);
+		handleDisconnect(socket,socketStates[socket.id]);
 	});
 });
