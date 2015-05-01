@@ -4,11 +4,13 @@ var socket = io.connect();
 var self = null;
 var otherusers = [];
 var num_messages = 0;
+var defaultName;
 
 // Constant Values - MUST MATCH THE SAME NAME ON SERVER FILE
 var GAME_TIME = 150;
 var RESULTS_TIME = 15;
 var MAX_HEALTH = 20;
+var PSEUDO_TIME = 30;
 
 // Add a message and a pseudo
 function addMessage(msg, pseudo) {
@@ -79,6 +81,7 @@ function joinRoom(){
 socket.on('roomApproved',function(data){
     if (data['approved'] == true){
         game.state.start("WaitingRoom", false, false, data['name']);
+        defaultName = "player-" + data['position'];
     }
     else
         game.state.start("MainMenu");
