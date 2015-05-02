@@ -9,8 +9,7 @@ var timer = 10;
 
 socket.on('countdownTimer',function(data){
 	timer = data;
-	if (timer == 0){
-		socket.emit('startGameTimer', GAME_TIME);
+	if (timer <= 0){
 		game.state.start('Game');
 	}
 })

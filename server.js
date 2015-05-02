@@ -96,7 +96,8 @@ function ResultsCountDown(time, room) {
 	var countdown = setInterval(function(){
 		io.to(room).emit('Resultscountdown', timeLeft);
 		timeLeft--;
-		if (timeLeft < 0){
+		if (timeLeft < 0)
+		{
 			clearInterval(countdown);
 			if (gamerunning[room])
 			{
@@ -117,23 +118,20 @@ function startCountdown(time,room){
 		if (timeLeft < 0){
 			clearInterval(countdown);
 			console.log("Game in room " + room + " has started!");
-			for (var i = 0; i < 4; ++i){
-				var temp = socketIDs[room][i];
-				socketStates[temp] = "Game";
-			}
 		}
 	},1000)
 }
 
 function startPseudoCountdown(time,room){
 	var timeLeft = time;
+	var set_pseudo_early = false;
 	var countdown = setInterval(function(){
 		io.to(room).emit('pseudoTimer',timeLeft);
 		timeLeft--;
-		console.log("Time decremented");
-		if (timeLeft < 0){
+		set_pseudo_early = ((who_set_pseudo[room][0]) && (who_set_pseudo[room][1]) && (who_set_pseudo[room][2]) && (who_set_pseudo[room][3])); 
+		if ((timeLeft < 0)  || (set_pseudo_early)) {
+			console.log("pseudotimer stopped");
 			clearInterval(countdown);
-			console.log("WaitingRoom2 started in room " + room);
 		}
 	},1000)
 }
@@ -149,11 +147,8 @@ function roomExists(room) {
 };
 
 function handleDisconnect(socket,state){
-	if (state == "MainMenu"){
+	if (state == "MainMenu-HostRoom"){
 		console.log("user " + socket.id + " has disconnected from main menu");
-	}
-	else if (state == "HostRoom"){
-		console.log("user " + socket.id + " has disconnected from host room");	
 	}
 	else if (state == "JoinRoom"){
 		console.log("user " + socket.id + " has disconnected from join room");	
@@ -195,14 +190,18 @@ function handleDisconnect(socket,state){
 
 		}
 	}
-	else if (state == "WaitingRoom2" && state == "SetPseudo"){
+	else if (state == "WaitingRoom2" || state == "SetPseudo" || state == "Game"){
 		console.log("user " + socket.id + " has exited room " + roomName);
+		gamerunning[roomName] = false;
+		gamecount[roomName] = false;
+		pseudocount[roomName] = false;
+		
 		socket.leave(roomName);
-		io.to(roomName).emit('kickedOut')
-		rooms[roomName]--;
-		var data = 4 - rooms[roomName];
-		io.to(roomName).emit('playerCount',data);
+		//rooms[roomName]--;
+		//var data = 4 - rooms[roomName];
+		//io.to(roomName).emit('playerCount',data);
 		socket.broadcast.emit('deleteRoomButton',roomName);
+		io.to(roomName).emit('backToMainMenu', true);
 		delete rooms[roomName];
 		delete socketIDs[roomName];
 		delete clients[roomName];
@@ -219,6 +218,7 @@ function handleDisconnect(socket,state){
 // Connection event
 io.sockets.on('connection', function (socket) {
 	console.log('user ' + socket.id + ' connected');
+	socketStates[socket.id] = "MainMenu-HostRoom";
 	
 	//Initialize room buttons every time someone requests to join game
 	socket.on('initializeRooms', function(){
@@ -232,7 +232,6 @@ io.sockets.on('connection', function (socket) {
     	health[socket.id] = MAX_HEALTH;
     	IDtoPseudo[socket.id] = socket.pseudo;
     	who_set_pseudo[clients[socket.id]][clientPlayers[socket.id]] = true;
-    	socketStates[socket.id] = "WaitingRoom2";
 	});
 
 	// Obtaining a sent message event
@@ -314,22 +313,27 @@ io.sockets.on('connection', function (socket) {
 
 	socket.on('startTimer', function(timer) {
 
+		socketStates[socket.id] = "WaitingRoom2";
+
 		if (who_set_pseudo[clients[socket.id]][0] && 
 			who_set_pseudo[clients[socket.id]][1] && 
 			who_set_pseudo[clients[socket.id]][2] && 
 			who_set_pseudo[clients[socket.id]][3])
 		{
 			var roomName = clients[socket.id];
+			var tempPseudo = [];
 			for (var i = 0; i < 4; i++)
 			{
-				io.to(roomName).emit('setPseudo', IDtoPseudo[socketIDs[roomName][i]]);
+				tempPseudo[i] = IDtoPseudo[socketIDs[roomName][i]];
 			}
+			io.to(roomName).emit('setPseudo', tempPseudo);
 			startCountdown(10, clients[socket.id]);
 		}
 	});
 
 	socket.on('startGameTimer', function (num) {
 		var roomName = clients[socket.id];
+		socketStates[socket.id] = "Game";
 		if (!gamecount[roomName])
 		{
 			gamecount[roomName] = true;
@@ -340,10 +344,9 @@ io.sockets.on('connection', function (socket) {
 
 	socket.on('startPseudoTimer',function (num){
 		var roomName = clients[socket.id];
+		socketStates[socket.id] = "setPseudo";
 		if (!pseudocount[roomName]){
-			console.log("Hi");
 			pseudocount[roomName] = true;
-
 			startPseudoCountdown(num,roomName);
 		}
 	});
@@ -518,6 +521,7 @@ io.sockets.on('connection', function (socket) {
 
 	//Alerts when someone disconnects
 	socket.on('disconnect', function(){
+		console.log('user' + socket.id + 'has disconnected');
 		handleDisconnect(socket,socketStates[socket.id]);
 	});
 });

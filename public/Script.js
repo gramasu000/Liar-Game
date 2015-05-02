@@ -92,10 +92,14 @@ socket.on('gameStart', function(data){
 });
 
 socket.on('setPseudo', function(data) {
-    if (data != self)
+    
+    for (var i = 0; i < data.length; i++)
     {
-        otherusers.push(data);
-        $("#otheruser").append('<div><input type="radio" id="'+ data + '" name="recipient" value="'+ data +'">' + data + '</div>');    
+        if (data[i] != self)
+        {
+            otherusers.push(data[i]);
+            $("#otheruser").append('<div><input type="radio" id="'+ data[i] + '" name="recipient" value="'+ data[i] +'">' + data[i] + '</div>');    
+        }
     }
 });
 
@@ -105,6 +109,10 @@ socket.on('message', function(data) {
         addMessage(data['message'], data['pseudo']);
     }
 });
+
+socket.on('backToMainMenu', function (bool) {
+    game.state.start();
+})
 
 function onStart() {
     $("#chatControls").hide();
