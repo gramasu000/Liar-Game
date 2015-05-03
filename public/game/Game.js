@@ -334,6 +334,8 @@ BasicGame.Game.prototype = {
         this.kingdom_names[3].anchor = new Phaser.Point(0.5, 0.5);
         this.kingdom_names[3].rotation = -Math.PI/2;
 
+        socket.emit('startGameTimer', GAME_TIME);
+
         // Display timer
         this.timer_text = this.add.text(20,20, gametimer, {font: "32px Arial", fill: "#FFFFFF" });
     },
