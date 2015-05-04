@@ -4,6 +4,7 @@ BasicGame.MainMenu = function (game) {
 	this.music = null;
 	this.hostGameButton = null;
 	this.joinGameButton = null;
+	this.howToPlayButton = null;
 
 };
 
@@ -29,6 +30,10 @@ BasicGame.MainMenu.prototype = {
         this.joinGameButton = this.add.button(328, 446, 'joinGameButton', this.joinGame, this, 'buttonOver', 'buttonOut', 'buttonOver');
         this.joinGameButton.width = 144;
         this.joinGameButton.height = 40;
+
+        this.howToPlayButton = this.add.button(328, 487, 'howToPlayButton', this.howToPlay, this, 'buttonOver', 'buttonOut', 'buttonOver');
+        this.howToPlayButton.width = 144;
+        this.howToPlayButton.height = 40;
 	},
 
 	update: function () {
@@ -56,6 +61,11 @@ BasicGame.MainMenu.prototype = {
 
 		//	And go to the room list
 		this.state.start('JoinRoom');
+	},
+
+	howToPlay: function(pointer){
+		this.music.stop();
+		this.state.start('HowToPlay');
 	}
 
 };

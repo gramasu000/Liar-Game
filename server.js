@@ -154,6 +154,7 @@ function handleDisconnect(socket,state){
 		console.log("user " + socket.id + " has disconnected from join room");	
 	}
 	else if (state == "WaitingRoom"){
+		var roomName = clients[socket.id];
 		console.log("user " + socket.id + " has exited room " + roomName);
 		socket.leave(roomName);
 		socket.broadcast.emit('updateRoomButtons',{'increase' : false, 'name' : roomName});
