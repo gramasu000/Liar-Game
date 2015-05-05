@@ -64,6 +64,7 @@ function setPseudo() {
 function hostRoom(){
     if ($("#hostRoomInput").val() != ""){
         socket.emit('host', $("#hostRoomInput").val());
+        $('#hostRoomInput').val('');
         $('#hostRoomInput').hide();
         $('#hostRoom').hide();
     }
@@ -87,9 +88,9 @@ socket.on('roomApproved',function(data){
         game.state.start("MainMenu");
 })
 
-socket.on('gameStart', function(data){
-    game.state.start("SetPseudo");
-});
+//socket.on('gameStart', function(data){
+//    game.state.start("SetPseudo");
+//});
 
 socket.on('setPseudo', function(data) {
     
@@ -111,7 +112,19 @@ socket.on('message', function(data) {
 });
 
 socket.on('backToMainMenu', function (bool) {
-    game.state.start();
+    // If this is called we are in SetPseudo or WaitingRoom2 stages
+
+    // Hide the pseudos
+    $(".pseudo").hide();
+    // Clear radio buttons and otheruser values
+    $("#otheruser").empty();
+    otherusers = [];
+    // Just in case
+    num_messages = 0;
+    // For the main menu
+    disconnect = true;
+
+    game.state.start('MainMenu');
 })
 
 function onStart() {

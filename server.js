@@ -115,9 +115,14 @@ function startCountdown(time,room){
 	var countdown = setInterval(function(){
 		io.to(room).emit('countdownTimer',timeLeft);
 		timeLeft--;
-		if (timeLeft < 0){
+		// If timer runs out or if someone disconnects
+		if (timeLeft < 0 || rooms[room] == null){
 			clearInterval(countdown);
-			console.log("Game in room " + room + " has started!");
+
+			if (rooms[room] != null)
+				console.log("Game in room " + room + " has started!");
+			else
+				console.log("timer stopped due to disconnection");
 		}
 	},1000)
 }
@@ -129,10 +134,13 @@ function startPseudoCountdown(time,room){
 		io.to(room).emit('pseudoTimer',timeLeft);
 		timeLeft--;
 		set_pseudo_early = ((who_set_pseudo[room][0]) && (who_set_pseudo[room][1]) && (who_set_pseudo[room][2]) && (who_set_pseudo[room][3])); 
-		if ((timeLeft < 0)  || (set_pseudo_early)) {
+		
+	// Clear if (1) time runs out (2) people set their usernames early (3) there is a disconnection
+		if ((timeLeft < 0)  || (set_pseudo_early) || rooms[room] == null) {
 			console.log("pseudotimer stopped");
 			clearInterval(countdown);
 		}
+
 	},1000)
 }
 
@@ -191,8 +199,11 @@ function handleDisconnect(socket,state){
 
 		}
 	}
-	else if (state == "WaitingRoom2" || state == "SetPseudo" || state == "Game"){
+	else if (state == "WaitingRoom2" || state == "SetPseudo"){
+		var roomName = clients[socket.id];
 		console.log("user " + socket.id + " has exited room " + roomName);
+		
+		// Just in case
 		gamerunning[roomName] = false;
 		gamecount[roomName] = false;
 		pseudocount[roomName] = false;
@@ -211,6 +222,10 @@ function handleDisconnect(socket,state){
 		delete health[socket.id];
     	delete IDtoPseudo[socket.id];
     	delete who_set_pseudo[clients[socket.id]][clientPlayers[socket.id]];
+	}
+	else if (state == "Game")
+	{
+
 	}
 
 
@@ -308,7 +323,7 @@ io.sockets.on('connection', function (socket) {
 
 	socket.on('exitRoom',function(roomName){
 		
-		handleDisconnect(socket,"ExitRoom");
+		handleDisconnect(socket, socketStates[socket.id]);
 
 	});
 
@@ -345,7 +360,7 @@ io.sockets.on('connection', function (socket) {
 
 	socket.on('startPseudoTimer',function (num){
 		var roomName = clients[socket.id];
-		socketStates[socket.id] = "setPseudo";
+		socketStates[socket.id] = "SetPseudo";
 		if (!pseudocount[roomName]){
 			pseudocount[roomName] = true;
 			startPseudoCountdown(num,roomName);
@@ -522,7 +537,7 @@ io.sockets.on('connection', function (socket) {
 
 	//Alerts when someone disconnects
 	socket.on('disconnect', function(){
-		console.log('user' + socket.id + 'has disconnected');
+		//console.log('user' + socket.id + 'has disconnected');
 		handleDisconnect(socket,socketStates[socket.id]);
 	});
 });

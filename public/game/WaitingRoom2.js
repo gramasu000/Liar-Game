@@ -1,11 +1,12 @@
 BasicGame.WaitingRoom2 = function (game) {
 	
 	this.waitingRoomBackground = null;
+	this.warningMessage = null;
 
 }
 
 var text;
-var timer = 10;
+var timer;
 
 socket.on('countdownTimer',function(data){
 	timer = data;
@@ -25,6 +26,12 @@ BasicGame.WaitingRoom2.prototype = {
 	create: function () {
 
 		var style = { font: "60px Arial", fill: "#ff0044", align: "center" };
+
+		timer = 10;
+		
+		// Display warning message
+		this.warningMessage = this.add.text(400,50, "Do Not Close Your Browser", {font: "32px Arial", fill: "#FFFFFF" });
+		this.warningMessage.anchor = new Phaser.Point(0.5, 0.5);
 
     	text = game.add.text(game.world.centerX, game.world.centerY, "Game Starting in " + timer , style);
 

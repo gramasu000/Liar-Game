@@ -5,8 +5,11 @@ BasicGame.MainMenu = function (game) {
 	this.hostGameButton = null;
 	this.joinGameButton = null;
 	this.howToPlayButton = null;
+	this.disconnectedMessage = null;
 
 };
+
+var disconnect = false;
 
 BasicGame.MainMenu.prototype = {
 
@@ -34,6 +37,13 @@ BasicGame.MainMenu.prototype = {
         this.howToPlayButton = this.add.button(328, 487, 'howToPlayButton', this.howToPlay, this, 'buttonOver', 'buttonOut', 'buttonOver');
         this.howToPlayButton.width = 144;
         this.howToPlayButton.height = 40;
+
+        if (disconnect)
+        {
+        	this.disconnectedMessage = this.add.text(400, 50, "A Player Has Disconnected", {font: "32px Arial", fill: "#FFFFFF" });
+        	this.disconnectedMessage.anchor = new Phaser.Point(0.5,0.5);
+        	disconnect = false;
+        }
 	},
 
 	update: function () {

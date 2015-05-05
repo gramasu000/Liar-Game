@@ -3,6 +3,7 @@ BasicGame.JoinRoom = function (game) {
 	this.joinRoomBackground = null;
 	this.backButton = null;
 	this.roomButtons = [];
+	this.joinRoomOnce = false;
 }
 
 var numGamesPossible = 10;
@@ -102,6 +103,8 @@ BasicGame.JoinRoom.prototype = {
         this.joinRoomBackground.width = 800;
         this.joinRoomBackground.height = 600;
 
+        this.joinRoomOnce = false;
+
         this.backButton = this.add.button(30,500,'backButton',this.backToMainMenu,this);
       
         for (var i = 20; i <= 380; i += 90) {
@@ -117,11 +120,12 @@ BasicGame.JoinRoom.prototype = {
 	create: function () {
 
 		$(".jRoom").show();
+		this.joinRoomOnce = false;
 
 	},
 
 	update: function () {
-		console.log(listOfGames);
+		//console.log(listOfGames);
 		for (var i = 0; i < numGamesPossible; i++) {
 			if (listOfGames[i] != ''){
 				this.roomButtons[i].setRoomName(listOfGames[i]);
@@ -134,9 +138,14 @@ BasicGame.JoinRoom.prototype = {
 	},
 
 	joinGameRoom: function (button){
-		socket.emit('join',button.actualName);
-		$('#joinRoomInput').hide();
-        $('#joinRoom').hide();
+		if (!this.joinRoomOnce)
+		{
+			socket.emit('join',button.actualName);
+			$('#joinRoomInput').val('');
+			$('#joinRoomInput').hide();
+        	$('#joinRoom').hide();
+        	this.JoinRoomOnce = true;
+        }
 	},
 
 	backToMainMenu: function(){
