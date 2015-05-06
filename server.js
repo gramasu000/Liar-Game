@@ -119,8 +119,9 @@ function startCountdown(time,room){
 		if (timeLeft < 0 || rooms[room] == null){
 			clearInterval(countdown);
 
-			if (rooms[room] != null)
+			if (rooms[room] != null) {
 				console.log("Game in room " + room + " has started!");
+			}
 			else
 				console.log("timer stopped due to disconnection");
 		}
@@ -133,10 +134,19 @@ function startPseudoCountdown(time,room){
 	var countdown = setInterval(function(){
 		io.to(room).emit('pseudoTimer',timeLeft);
 		timeLeft--;
-		set_pseudo_early = ((who_set_pseudo[room][0]) && (who_set_pseudo[room][1]) && (who_set_pseudo[room][2]) && (who_set_pseudo[room][3])); 
-		
+
+		if (rooms[room] != null)
+			set_pseudo_early = ((who_set_pseudo[room][0]) && (who_set_pseudo[room][1]) && (who_set_pseudo[room][2]) && (who_set_pseudo[room][3])); 
+		else
+			set_pseudo_early = false;
+
 	// Clear if (1) time runs out (2) people set their usernames early (3) there is a disconnection
-		if ((timeLeft < 0)  || (set_pseudo_early) || rooms[room] == null) {
+		if ((timeLeft < 0) || (rooms[room] == null) 
+			|| ((who_set_pseudo[room][0]) && 
+				(who_set_pseudo[room][1]) && 
+				(who_set_pseudo[room][2]) && 
+				(who_set_pseudo[room][3]))) 
+		{
 			console.log("pseudotimer stopped");
 			clearInterval(countdown);
 		}
@@ -209,23 +219,55 @@ function handleDisconnect(socket,state){
 		pseudocount[roomName] = false;
 		
 		socket.leave(roomName);
-		//rooms[roomName]--;
-		//var data = 4 - rooms[roomName];
-		//io.to(roomName).emit('playerCount',data);
 		socket.broadcast.emit('deleteRoomButton',roomName);
 		io.to(roomName).emit('backToMainMenu', true);
-		delete rooms[roomName];
+
+		for (var i = 0; i < 4; i++)
+		{
+			delete clientPlayers[socketIDs[roomName][i]];
+			delete socketStates[socketIDs[roomName][i]];
+			delete health[socketIDs[roomName][i]];
+    		delete IDtoPseudo[socketIDs[roomName][i]];
+    	}
+
+    	delete rooms[roomName];
 		delete socketIDs[roomName];
 		delete clients[roomName];
-		delete clientPlayers[socket.id];
-		delete socketStates[socket.id];
-		delete health[socket.id];
-    	delete IDtoPseudo[socket.id];
-    	delete who_set_pseudo[clients[socket.id]][clientPlayers[socket.id]];
+		delete who_set_pseudo[roomName];
+
+    	
 	}
 	else if (state == "Game")
 	{
+		roomName = clients[socket.id];
+		health[socket.id] = 0;
 
+		// If player X disconnects during game, we inform other players 
+		if (clientPlayers[socket.id] == 0)
+		{
+			// We inform player Y that (in their view) player Z is disconnected
+			io.to(socketIDs[roomName][1]).emit('playerDisconnect', 0);
+			io.to(socketIDs[roomName][2]).emit('playerDisconnect', 0);
+			io.to(socketIDs[roomName][3]).emit('playerDisconnect', 0);
+		}
+		else if (clientPlayers[socket.id] == 1) {
+			io.to(socketIDs[roomName][0]).emit('playerDisconnect', 0);
+			io.to(socketIDs[roomName][2]).emit('playerDisconnect', 1);
+			io.to(socketIDs[roomName][3]).emit('playerDisconnect', 1);
+		}
+		else if (clientPlayers[socket.id] == 2) {
+			io.to(socketIDs[roomName][0]).emit('playerDisconnect', 1);
+			io.to(socketIDs[roomName][1]).emit('playerDisconnect', 1);
+			io.to(socketIDs[roomName][3]).emit('playerDisconnect', 2);
+
+		}
+		else if (clientPlayers[socket.id] == 3) {
+			io.to(socketIDs[roomName][0]).emit('playerDisconnect', 2);
+			io.to(socketIDs[roomName][1]).emit('playerDisconnect', 2);
+			io.to(socketIDs[roomName][2]).emit('playerDisconnect', 2);
+		}
+
+		
 	}
 
 
@@ -531,8 +573,32 @@ io.sockets.on('connection', function (socket) {
 	});
 
 	socket.on('gameEnd', function (data) {
-		gamerunning[clients[socket.id]] = data;
+		
+		var roomName = clients[socket.id];
+		console.log("user " + socket.id + " has exited room " + roomName);
 		io.to(clients[socket.id]).emit('gameOver');
+		
+		// Just in case
+		gamerunning[roomName] = false;
+		gamecount[roomName] = false;
+		pseudocount[roomName] = false;
+		
+		socket.leave(roomName);
+		socket.broadcast.emit('deleteRoomButton',roomName);
+		//io.to(roomName).emit('backToMainMenu', true);
+
+		for (var i = 0; i < 4; i++)
+		{
+			delete clientPlayers[socketIDs[roomName][i]];
+			delete socketStates[socketIDs[roomName][i]];
+			delete health[socketIDs[roomName][i]];
+    		delete IDtoPseudo[socketIDs[roomName][i]];
+    	}
+
+    	delete rooms[roomName];
+		delete socketIDs[roomName];
+		delete clients[roomName];
+		delete who_set_pseudo[roomName];
 	}); 
 
 	//Alerts when someone disconnects

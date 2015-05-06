@@ -54,6 +54,8 @@ var record;
 var record_counter;
 var gametimer;
 
+var otherPlayerDisconnect;
+
 socket.on('health', function(userhealth) {
 
     health = userhealth;
@@ -75,6 +77,13 @@ socket.on('Resultscountdown', function(time) { record_counter = time; });
 socket.on('gameOver',function(){
 
 });
+
+socket.on('playerDisconnect', function(index) { 
+    health[index] = 0;
+    otherPlayerDisconnect = index;
+    console.log("Player " + index + " disconnected");
+
+}); 
 
 
 BasicGame.Game.prototype = {
@@ -108,6 +117,8 @@ BasicGame.Game.prototype = {
 
         record = false;
         gametimer = GAME_TIME;
+
+        otherPlayerDisconnect = -1;
 
         // Background
         this.gameBackground = this.add.sprite(0,0,'gameBackground');
@@ -381,11 +392,6 @@ BasicGame.Game.prototype = {
             this.kingdom_names[2].setText(otherusers[1] + ": " + health[1]);
             this.kingdom_names[3].setText(otherusers[2] + ": " + health[2]);
 
-            if ((health[0] <= 0) && (health[1] <= 0) && (health[2] <= 0))
-            {
-                socket.emit("gameEnd", false);
-            }
-
         }
         else if (record_counter <= 0)
         {
@@ -417,7 +423,7 @@ BasicGame.Game.prototype = {
             {
                 this.win_text = this.add.text(400, 270, "You Win!", {font: "32px Arial", fill: "#FFFFFF" });
                 this.win_text.anchor = new Phaser.Point(0.5, 0.5);
-                this.backButton = this.add.button(30,500,'backButton',this.backToMainMenu,this);
+                this.backButton = this.add.button(30,500,'backButton', this.backMainMenu,this);
             }
             // If you are alive, set the submit boolean to false so you can submit your moves 
             // for the next turn
@@ -434,7 +440,7 @@ BasicGame.Game.prototype = {
                 health["self"] = 0;
                 this.lose_text = this.add.text(400, 270, "You Lose!", {font: "32px Arial", fill: "#FFFFFF" });
                 this.lose_text = new Phaser.Point(0.5,0.5);
-                this.backButton = this.add.button(30,500,'backButton',this.backToMainMenu,this);
+                this.backButton = this.add.button(30,500,'backButton', this.backMainMenu ,this);
             }
 
 
@@ -451,6 +457,11 @@ BasicGame.Game.prototype = {
             this.kingdom_names[2].setText(otherusers[1] + ": " + health[1]);
             this.kingdom_names[3].setText(otherusers[2] + ": " + health[2]);
 
+            if ((health[0] <= 0) && (health[1] <= 0) && (health[2] <= 0))
+            {
+                socket.emit("gameEnd", false);
+            }
+
 
         }
         else
@@ -462,12 +473,21 @@ BasicGame.Game.prototype = {
             }
         }
 
+        //console.log(otherPlayerDisconnect);
+        if (otherPlayerDisconnect != -1)
+        {
+            console.log("Show that a player " + otherPlayerDisconnect + " disconnected");
+            this.kingdom_names[otherPlayerDisconnect + 1].setText("Disconnected");
+            this.kingdom[otherPlayerDisconnect + 1].tint = 0x794044;
+            otherPlayerDisconnect = -1;
+        }
+
     },
 
-    backToMainMenu: function(){
-        this.state.start('MainMenu');
+    backMainMenu: function(){
+        disconnect = false;
+        backToMainMenu();
     },
-
     attack0: function () {
 
         if (!this.submit_boolean) {

@@ -49,6 +49,7 @@ socket.on('deleteRoomButton',function(name){
 	for (var i = 1; i < numGamesPossible; i++) {
 		if (listOfGames[i] != ''){
 			var j;
+			// For loop doesn't have body
 			for (j = i-1; j >= 0 && listOfGames[j] == ''; j--);
 			listOfGames[j+1] = listOfGames[i];
 			listOfGames[i] = '';

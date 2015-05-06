@@ -1,5 +1,5 @@
-//var socket = io.connect("http://liargame-akgr.rhcloud.com:8000");
-var socket = io.connect();
+var socket = io.connect("http://liargame-akgr.rhcloud.com:8000");
+//var socket = io.connect();
 
 var self = null;
 var otherusers = [];
@@ -79,6 +79,19 @@ function joinRoom(){
     }
 }
 
+function backToMainMenu() {
+
+    // Hide the pseudos
+    $(".pseudo").hide();
+    // Clear radio buttons and otheruser values
+    $("#otheruser").empty();
+    otherusers = [];
+    // Just in case
+    num_messages = 0;
+
+    game.state.start('MainMenu');
+}
+
 socket.on('roomApproved',function(data){
     if (data['approved'] == true){
         game.state.start("WaitingRoom", false, false, data['name']);
@@ -111,21 +124,14 @@ socket.on('message', function(data) {
     }
 });
 
-socket.on('backToMainMenu', function (bool) {
+socket.on('backToMainMenu', function () {
     // If this is called we are in SetPseudo or WaitingRoom2 stages
 
-    // Hide the pseudos
-    $(".pseudo").hide();
-    // Clear radio buttons and otheruser values
-    $("#otheruser").empty();
-    otherusers = [];
-    // Just in case
-    num_messages = 0;
     // For the main menu
     disconnect = true;
 
-    game.state.start('MainMenu');
-})
+    backToMainMenu();
+});
 
 function onStart() {
     $("#chatControls").hide();
