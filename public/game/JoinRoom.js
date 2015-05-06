@@ -121,6 +121,7 @@ BasicGame.JoinRoom.prototype = {
 	create: function () {
 
 		$(".jRoom").show();
+		$("#joinRoomInput").focus();
 		this.joinRoomOnce = false;
 
 	},
