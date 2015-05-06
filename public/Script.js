@@ -83,8 +83,9 @@ function backToMainMenu() {
 
     // Hide the pseudos
     $(".pseudo").hide();
-    // Clear radio buttons and otheruser values
+    // Clear radio buttons, chat entries and otheruser values
     $("#otheruser").empty();
+    $("#chatEntries").empty();
     otherusers = [];
     // Just in case
     num_messages = 0;
