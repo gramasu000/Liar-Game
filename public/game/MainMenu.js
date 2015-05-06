@@ -40,7 +40,7 @@ BasicGame.MainMenu.prototype = {
 
         if (disconnect)
         {
-        	this.disconnectedMessage = this.add.text(400, 50, "A Player Has Disconnected", {font: "32px Arial", fill: "#FFFFFF" });
+        	this.disconnectedMessage = this.add.text(400, 50, "A Player Has Disconnected", {font: "32px Arial", fill: "#000000" });
         	this.disconnectedMessage.anchor = new Phaser.Point(0.5,0.5);
         	disconnect = false;
         }
