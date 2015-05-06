@@ -36,6 +36,11 @@ var who_set_pseudo = {};
 // Who among all players set actions
 var who_set_actions = {};
 
+//Map from rooms to an array of taken pseudos
+var takenPseudos = {};
+
+var listOfReservedNames = ['player-0','player-1','player-2','player-3'];
+
 // Health Values
 var health = {};
 var actions = {};
@@ -186,6 +191,7 @@ function handleDisconnect(socket,state){
 			delete clients[roomName];
 			delete clientPlayers[socket.id];
 			delete socketStates[socket.id];
+			delete takenPseudos[roomName];
 		}
 		else{
 			var index = clientPlayers[socket.id];
@@ -234,6 +240,7 @@ function handleDisconnect(socket,state){
 		delete socketIDs[roomName];
 		delete clients[roomName];
 		delete who_set_pseudo[roomName];
+		delete takenPseudos[roomName];
 
     	
 	}
@@ -286,10 +293,24 @@ io.sockets.on('connection', function (socket) {
 
 	// SetPseudo event
 	socket.on('setPseudo', function (data) {
-    	socket.pseudo = data['pseudo'];
-    	health[socket.id] = MAX_HEALTH;
-    	IDtoPseudo[socket.id] = socket.pseudo;
-    	who_set_pseudo[clients[socket.id]][clientPlayers[socket.id]] = true;
+		var pseudo = data['pseudo'];
+		if (pseudo.length > 10){
+    		io.to(socket.id).emit('pseudoError',"tooLong");
+    	}
+    	else if (takenPseudos[clients[socket.id]].indexOf(pseudo) > -1){
+    		io.to(socket.id).emit('pseudoError',"nameTaken");
+    	}
+    	else if (!data['default'] && listOfReservedNames.indexOf(pseudo) > -1){
+    		io.to(socket.id).emit('pseudoError',"reservedName");
+    	}
+    	else{
+    		io.to(socket.id).emit('pseudoError',"noError");
+    		socket.pseudo = pseudo;
+	    	health[socket.id] = MAX_HEALTH;
+	    	IDtoPseudo[socket.id] = pseudo;
+	    	who_set_pseudo[clients[socket.id]][clientPlayers[socket.id]] = true;
+	    	takenPseudos[clients[socket.id]].push(pseudo);
+    	}
 	});
 
 	// Obtaining a sent message event
@@ -313,6 +334,7 @@ io.sockets.on('connection', function (socket) {
 			clientPlayers[socket.id] = 0;
 			socketIDs[roomName] = [];
 			socketIDs[roomName][0] = socket.id;
+			takenPseudos[roomName] = [];
 
 			//Initialize boolean maps
 			who_set_pseudo[roomName] = [false, false, false, false];

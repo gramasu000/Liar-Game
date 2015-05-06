@@ -16,6 +16,7 @@ BasicGame.HostRoom.prototype = {
 	create: function () {
 
 		$(".hRoom").show();
+		$("#hostRoomInput").focus();
 
 	},
 

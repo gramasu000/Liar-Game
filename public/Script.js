@@ -45,18 +45,13 @@ function sentMessage() {
 }
 
 // Setting a pseudo
-function setPseudo() {
+function setPseudo(isDefault) {
+    isDefault = typeof isDefault !== 'undefined' ? isDefault : false;
     if ($("#pseudoInput").val() != "")
     {
         self = $("#pseudoInput").val();
-        var data = {'pseudo' : self};
+        var data = {'pseudo' : self, 'default' : isDefault};
         socket.emit('setPseudo', data);
-        
-        $('#chatControls').show();
-        $('#pseudoInput').hide();
-        $('#pseudoSet').hide();
-        game.state.start('WaitingRoom2');
-        $("#pseudoInput").val("");
     }
 }
 
