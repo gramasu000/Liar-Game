@@ -23,7 +23,6 @@ BasicGame.Game = function (game) {
     //  You can use any of these from any function within this State.
     //  But do consider them as being 'reserved words', i.e. don't create a property for your own game called "world" or you'll over-write the world reference.
 
-    this.keycontrlgame;
     this.upKey;
     this.downKey;
     this.leftKey;
@@ -65,6 +64,8 @@ var record_actions;
 var record;
 var record_counter;
 var gametimer;
+
+var keycontrlgame;
 
 var whoSubmitted = [false, false, false];
 var otherPlayerDisconnect = [false, false, false];
@@ -108,7 +109,7 @@ BasicGame.Game.prototype = {
 
 
         // Initialize all variables
-        this.keycontrlgame = true;
+        keycontrlgame = true;
 
         this.gameBackground = null;
         this.kingdom = {};
@@ -470,6 +471,13 @@ BasicGame.Game.prototype = {
                 this.submit_messages[i].visible = false;
             }
 
+            // Remove Selection Rectangles
+            this.select_what = -1;
+            for (var i = 0; i < 6; i++)
+            {
+                this.select[i].visible = false
+            }
+ 
             // i represents other user "global" position
             for (var i = 0; i < 3; i++)
             {
@@ -716,7 +724,7 @@ BasicGame.Game.prototype = {
     },
 
     select_down: function () {
-        if (this.keycontrlgame) { 
+        if (keycontrlgame) { 
             if (this.select_what == -1)
             {
                 this.select_what = 0;
@@ -730,7 +738,7 @@ BasicGame.Game.prototype = {
         }
      },
     select_up: function() {
-        if (this.keycontrlgame) { 
+        if (keycontrlgame) { 
             if (this.select_what == -1)
             {
                 this.select_what = 0;
@@ -744,7 +752,7 @@ BasicGame.Game.prototype = {
         }
      },
     select_right: function() {
-        if (this.keycontrlgame) { 
+        if (keycontrlgame) { 
             if (this.select_what == -1)
             {
                 this.select_what = 0;
@@ -759,7 +767,7 @@ BasicGame.Game.prototype = {
         }
      },
     select_left: function () {
-        if (this.keycontrlgame) { 
+        if (keycontrlgame) { 
             if (this.select_what == -1)
             {
                 this.select_what = 0;
@@ -774,7 +782,7 @@ BasicGame.Game.prototype = {
         }
      },
     select: function () {
-        if (this.keycontrlgame) {    
+        if (keycontrlgame) {    
             if (this.select_what == -1 || this.select_what > 5)
             {
                 this.select_what = 0;
@@ -808,7 +816,7 @@ BasicGame.Game.prototype = {
     },
 
     enter_selection: function () {
-        if (this.keycontrlgame)
+        if (keycontrlgame)
         {
             this.submit();
         }
@@ -924,9 +932,9 @@ BasicGame.Game.prototype = {
 
     toggleGC: function () { 
 
-        if (this.keycontrlgame)
+        if (keycontrlgame)
         {
-            this.keycontrlgame = false;
+            keycontrlgame = false;
             $("#messageInput").focus();
             game.input.keyboard.removeKey(Phaser.keyboard.SHIFT);
             game.input.keyboard.removeKey(Phaser.keyboard.ENTER);
@@ -937,7 +945,8 @@ BasicGame.Game.prototype = {
         }
         else
         {
-            this.keycontrlgame = true;
+            keycontrlgame = true;
+            $("#messageInput").blur();
 
             this.upKey = game.input.keyboard.addKey(Phaser.Keyboard.UP);
             this.upKey.onDown.add(BasicGame.Game.prototype.select_up, this);
