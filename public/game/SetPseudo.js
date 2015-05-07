@@ -81,6 +81,7 @@ BasicGame.SetPseudo.prototype = {
 		this.nameReservedMessage.visible = false;
 
 		$(".pseudo").show();
+		$("#pseudoInput").focus();
 
 	},
 
