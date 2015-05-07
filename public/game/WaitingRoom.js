@@ -3,6 +3,7 @@ BasicGame.WaitingRoom = function (game) {
 	this.waitingRoomBackground = null;
 	this.backButton = null;
 	this.roomName = null;
+	this.leftKey = null;
 }
 
 var text;
@@ -24,6 +25,9 @@ BasicGame.WaitingRoom.prototype = {
         this.waitingRoomBackground.height = 600;
 
         this.backButton = this.add.button(30,500,'backButton',this.backToMainMenu,this);
+
+        this.leftKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
+		this.leftKey.onDown.add(this.backToMainMenu, this);
 	},
 
 	create: function () {

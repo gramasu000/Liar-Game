@@ -1,6 +1,8 @@
 BasicGame.HostRoom = function (game) {
 	
 	this.hostRoomBackground = null;
+	this.backButton = null;
+	this.leftKey = null;
 }
 
 BasicGame.HostRoom.prototype = {
@@ -14,6 +16,8 @@ BasicGame.HostRoom.prototype = {
 	},
 
 	create: function () {
+		this.leftKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
+		this.leftKey.onDown.add(this.backToMainMenu, this);
 
 		$(".hRoom").show();
 		$("#hostRoomInput").focus();
