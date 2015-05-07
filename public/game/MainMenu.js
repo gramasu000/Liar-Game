@@ -6,11 +6,12 @@ BasicGame.MainMenu = function (game) {
 	this.hostGameButton = null;
 	this.joinGameButton = null;
 	this.howToPlayButton = null;
+	this.keyboardControlButton = null;
 
 	this.buttonGroup = null;
 	this.arrowGroup = null;
 
-	this.currentArrow = null;
+	this.currentArrow = 0;
 
 	this.disconnectedMessage = null;
 
@@ -48,6 +49,7 @@ BasicGame.MainMenu.prototype = {
 		this.arrowGroup.create(305,430,'arrowMarker');
 		this.arrowGroup.create(305,475,'arrowMarker');
 		this.arrowGroup.create(305,520,'arrowMarker');
+		this.arrowGroup.create(305,565,'arrowMarker');
 		this.arrowGroup.setAll('anchor.x',0.5);
 		this.arrowGroup.setAll('anchor.y',0.5);
 		this.arrowGroup.setAll('width',50);
@@ -64,10 +66,13 @@ BasicGame.MainMenu.prototype = {
         this.joinGameButton = this.add.button(400, 475, 'joinGameButton', this.joinGame, this, 'buttonOver', 'buttonOut', 'buttonOver');
 
         this.howToPlayButton = this.add.button(400, 520, 'howToPlayButton', this.howToPlay, this, 'buttonOver', 'buttonOut', 'buttonOver');
+
+        this.keyboardControlButton = this.add.button(400, 565, 'keyboardControlButton', this.keyboardControl, this, 'buttonOver', 'buttonOut', 'buttonOver');
         
         this.buttonGroup.add(this.hostGameButton);
         this.buttonGroup.add(this.joinGameButton);
         this.buttonGroup.add(this.howToPlayButton);
+        this.buttonGroup.add(this.keyboardControlButton);
 
         this.buttonGroup.setAll('anchor.x',0.5);
         this.buttonGroup.setAll('anchor.y',0.5);
@@ -92,7 +97,8 @@ BasicGame.MainMenu.prototype = {
 		this.arrowGroup.setAll('visible',false);
 		var arrows = this.arrowGroup.children;
 		var length = arrows.length;
-		arrows[(--this.currentArrow % length)].visible = true;
+		this.currentArrow += 3;
+		arrows[this.currentArrow % length].visible = true;
 	},
 
 	moveDown: function(){
@@ -128,6 +134,11 @@ BasicGame.MainMenu.prototype = {
 		this.state.start('HowToPlay');
 	},
 
+	keyboardControl: function(pointer){
+		this.music.stop();
+		this.state.start('KeyboardControl');
+	},
+
 	enterNewState: function(){
 		if (this.currentArrow == 0){
 			this.hostGame();
@@ -135,8 +146,11 @@ BasicGame.MainMenu.prototype = {
 		else if (this.currentArrow == 1){
 			this.joinGame();
 		}
-		else{
+		else if (this.currentArrow == 2){
 			this.howToPlay();
+		}
+		else {
+			this.keyboardControl();
 		}
 	}
 

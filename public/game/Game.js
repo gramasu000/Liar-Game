@@ -431,7 +431,7 @@ BasicGame.Game.prototype = {
         this.kingdom_names[3].anchor = new Phaser.Point(0.5, 0.5);
         this.kingdom_names[3].rotation = -Math.PI/2;
 
-        // Who Sumbitted Messages
+        // Who Submitted Messages
         this.submit_messages[0] = this.add.text(130, 300, "Submitted", { font: "32px Arial", fill: "#FFFFFF" });
         this.submit_messages[0].anchor = new Phaser.Point(0.5, 0.5);
         this.submit_messages[0].rotation = Math.PI/2;
@@ -454,8 +454,6 @@ BasicGame.Game.prototype = {
     },
 
     update: function () {
-
-        //  Honestly, just about anything could go here. It's YOUR game after all. Eat your heart out!
 
         // RECORD PHASE
         if (record && (record_counter > 0))
