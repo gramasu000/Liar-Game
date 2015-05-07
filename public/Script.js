@@ -135,21 +135,21 @@ function onStart() {
     $(".hRoom").hide();
     $(".jRoom").hide();
     $("#pseudoSet").click(function() {setPseudo()});
-    $("#pseudoInput").keypress(function(e) { 
-        if(e.which == 13)
+    $("#pseudoInput").keyup(function(e) { 
+        if(e.keyCode == 13)
             setPseudo()});
     $("#hostRoom").click(function() {hostRoom()});
-    $("#hostRoomInput").keypress(function(e) { 
-        if(e.which == 13)
+    $("#hostRoomInput").keyup(function(e) { 
+        if(e.keyCode == 13)
             hostRoom()});
     $("#joinRoom").click(function() {joinRoom()});
-    $("#joinRoomInput").keypress(function(e) { 
-        if(e.which == 13)
+    $("#joinRoomInput").keyup(function(e) { 
+        if(e.keyCode == 13)
             joinRoom()});
     $("#submit").click(function() {sentMessage()});
-    $("#messageInput").keypress(function(e) {
-        if(e.which == 13)
-            sentMessage(); });
+    $("#messageInput").keyup(function(e) {
+        if(e.keyCode == 13)
+            sentMessage()});
 
 }
 

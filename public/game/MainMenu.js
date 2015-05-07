@@ -2,10 +2,21 @@
 BasicGame.MainMenu = function (game) {
 
 	this.music = null;
+	
 	this.hostGameButton = null;
 	this.joinGameButton = null;
 	this.howToPlayButton = null;
+
+	this.buttonGroup = null;
+	this.arrowGroup = null;
+
+	this.currentArrow = null;
+
 	this.disconnectedMessage = null;
+
+	this.upKey = null;
+	this.downKey = null;
+	this.enterKey = null;
 
 };
 
@@ -22,21 +33,46 @@ BasicGame.MainMenu.prototype = {
 		this.music = this.add.audio('titleMusic');
 		this.music.play();
 
+		this.upKey = game.input.keyboard.addKey(Phaser.Keyboard.UP);
+		this.downKey = game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
+		this.enterKey = game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
+		this.upKey.onDown.add(this.moveUp, this);
+		this.downKey.onDown.add(this.moveDown, this);
+		this.enterKey.onDown.add(this.enterNewState, this);
+
 		this.titlePage = this.add.sprite(0, 0, 'titlepage');
 		this.titlePage.width = 800;
 		this.titlePage.height = 650;
 
-		this.hostGameButton = this.add.button(328, 405, 'hostGameButton', this.hostGame, this, 'buttonOver', 'buttonOut', 'buttonOver');
-        this.hostGameButton.width = 144;
-        this.hostGameButton.height = 40;
+		this.arrowGroup = this.add.group();
+		this.arrowGroup.create(305,430,'arrowMarker');
+		this.arrowGroup.create(305,475,'arrowMarker');
+		this.arrowGroup.create(305,520,'arrowMarker');
+		this.arrowGroup.setAll('anchor.x',0.5);
+		this.arrowGroup.setAll('anchor.y',0.5);
+		this.arrowGroup.setAll('width',50);
+		this.arrowGroup.setAll('height',50);
+		this.arrowGroup.setAll('visible',false);
+		this.arrowGroup.children[0].visible = true;
 
-        this.joinGameButton = this.add.button(328, 446, 'joinGameButton', this.joinGame, this, 'buttonOver', 'buttonOut', 'buttonOver');
-        this.joinGameButton.width = 144;
-        this.joinGameButton.height = 40;
+		this.currentArrow = 0;
 
-        this.howToPlayButton = this.add.button(328, 487, 'howToPlayButton', this.howToPlay, this, 'buttonOver', 'buttonOut', 'buttonOver');
-        this.howToPlayButton.width = 144;
-        this.howToPlayButton.height = 40;
+		this.buttonGroup = this.add.group();
+
+		this.hostGameButton = this.add.button(400, 430, 'hostGameButton', this.hostGame, this, 'buttonOver', 'buttonOut', 'buttonOver');
+
+        this.joinGameButton = this.add.button(400, 475, 'joinGameButton', this.joinGame, this, 'buttonOver', 'buttonOut', 'buttonOver');
+
+        this.howToPlayButton = this.add.button(400, 520, 'howToPlayButton', this.howToPlay, this, 'buttonOver', 'buttonOut', 'buttonOver');
+        
+        this.buttonGroup.add(this.hostGameButton);
+        this.buttonGroup.add(this.joinGameButton);
+        this.buttonGroup.add(this.howToPlayButton);
+
+        this.buttonGroup.setAll('anchor.x',0.5);
+        this.buttonGroup.setAll('anchor.y',0.5);
+        this.buttonGroup.setAll('height',40);
+        this.buttonGroup.setAll('width',140);
 
         if (disconnect)
         {
@@ -50,6 +86,20 @@ BasicGame.MainMenu.prototype = {
 
 		//	Do some nice funky main menu effect here
 
+	},
+
+	moveUp: function(){
+		this.arrowGroup.setAll('visible',false);
+		var arrows = this.arrowGroup.children;
+		var length = arrows.length;
+		arrows[(--this.currentArrow % length)].visible = true;
+	},
+
+	moveDown: function(){
+		this.arrowGroup.setAll('visible',false);
+		var arrows = this.arrowGroup.children;
+		var length = arrows.length;
+		arrows[(++this.currentArrow % length)].visible = true;
 	},
 
 	hostGame: function (pointer) {
@@ -76,6 +126,18 @@ BasicGame.MainMenu.prototype = {
 	howToPlay: function(pointer){
 		this.music.stop();
 		this.state.start('HowToPlay');
+	},
+
+	enterNewState: function(){
+		if (this.currentArrow == 0){
+			this.hostGame();
+		}
+		else if (this.currentArrow == 1){
+			this.joinGame();
+		}
+		else{
+			this.howToPlay();
+		}
 	}
 
 };

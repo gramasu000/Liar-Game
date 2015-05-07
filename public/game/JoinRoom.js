@@ -4,6 +4,7 @@ BasicGame.JoinRoom = function (game) {
 	this.backButton = null;
 	this.roomButtons = [];
 	this.joinRoomOnce = false;
+	this.leftKey = null;
 }
 
 var numGamesPossible = 10;
@@ -116,6 +117,9 @@ BasicGame.JoinRoom.prototype = {
         	this.roomButtons[i].events.onInputDown.add(this.joinGameRoom,this);
         	this.roomButtons[i].visible = false;
         }
+
+        this.leftKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
+		this.leftKey.onDown.add(this.backToMainMenu, this);
 	},
 
 	create: function () {
