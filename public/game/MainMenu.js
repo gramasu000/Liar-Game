@@ -98,7 +98,8 @@ BasicGame.MainMenu.prototype = {
 		var arrows = this.arrowGroup.children;
 		var length = arrows.length;
 		this.currentArrow += 3;
-		arrows[this.currentArrow % length].visible = true;
+		this.currentArrow %= length;
+		arrows[this.currentArrow].visible = true;
 	},
 
 	moveDown: function(){
