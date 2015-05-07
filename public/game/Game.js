@@ -23,6 +23,14 @@ BasicGame.Game = function (game) {
     //  You can use any of these from any function within this State.
     //  But do consider them as being 'reserved words', i.e. don't create a property for your own game called "world" or you'll over-write the world reference.
 
+    this.keycontrlgame;
+    this.upKey;
+    this.downKey;
+    this.leftKey;
+    this.rightKey;
+    this.shiftkey;
+    this.esckey;
+
     this.gameBackground;
     this.kingdom;
     this.kingdom_names;
@@ -39,8 +47,11 @@ BasicGame.Game = function (game) {
     
     this.submit_button;
     this.submit_boolean;
-    this.submit_messages; 
 
+    this.select;
+    this.select_what;
+
+    this.submit_messages; 
     this.timer_text;
     this.win_text;
     this.lose_text;
@@ -95,7 +106,10 @@ BasicGame.Game.prototype = {
 
         //  Honestly, just about anything could go here. It's YOUR game after all. Eat your heart out!
 
+
         // Initialize all variables
+        this.keycontrlgame = true;
+
         this.gameBackground = null;
         this.kingdom = {};
         this.kingdom_names = {};
@@ -113,6 +127,9 @@ BasicGame.Game.prototype = {
         this.submit_button = null;
         this.submit_boolean = false; 
         this.submit_messages = {};
+
+        this.select = [];
+        this.select_what = -1;
 
         health["self"] = MAX_HEALTH;
         health[0] = MAX_HEALTH;
@@ -224,7 +241,7 @@ BasicGame.Game.prototype = {
         this.defend_buttons[0].anchor = new Phaser.Point(0.5,0.5);
         this.defend_buttons[0].width = 100;
         this.defend_buttons[0].height = 20;
-        this.defend_buttons[0].rotation = 2.23
+        this.defend_buttons[0].rotation = 2.23;
         this.defend_buttons[0].tint = 0x794044;
 
         this.defend_buttons[1] = this.add.button(400,450,'defend',this.defend1, this, 'buttonOver', 'buttonOut', 'buttonOver');
@@ -237,7 +254,7 @@ BasicGame.Game.prototype = {
         this.defend_buttons[2].anchor = new Phaser.Point(0.5,0.5);
         this.defend_buttons[2].width = 100;
         this.defend_buttons[2].height = 20;
-        this.defend_buttons[2].rotation = Math.PI - 2.23
+        this.defend_buttons[2].rotation = Math.PI - 2.23;
         this.defend_buttons[2].tint = 0x794044;
         
 
@@ -333,6 +350,70 @@ BasicGame.Game.prototype = {
         this.submit_button.width = 200;
         this.submit_button.height = 100;
         this.submit_button.anchor = new Phaser.Point(0.5, 0.5);
+
+        // Selection Rectangles
+        this.select[0] = this.add.sprite(225, 485, 'select');
+        this.select[0].anchor = new Phaser.Point(0.5, 0.5);
+        this.select[0].width = 55;
+        this.select[0].height = 105;
+        this.select[0].rotation = 2*Math.PI - 2.5;
+        this.select[0].visible = false;
+
+        this.select[1] = this.add.sprite(260, 510, 'select');
+        this.select[1].anchor = new Phaser.Point(0.5, 0.5);
+        this.select[1].width = 105;
+        this.select[1].height = 25;
+        this.select[1].rotation = 2.23;
+        this.select[1].visible = false;
+
+        this.select[2] = this.add.sprite(400, 380, 'select');
+        this.select[2].anchor = new Phaser.Point(0.5, 0.5);
+        this.select[2].width = 105;
+        this.select[2].height = 105;
+        this.select[2].rotation = 3*Math.PI / 2;
+        this.select[2].visible = false;
+
+        this.select[3] = this.add.sprite(400, 450, 'select');
+        this.select[3].anchor = new Phaser.Point(0.5, 0.5);
+        this.select[3].width = 105;
+        this.select[3].height = 25;
+        this.select[3].visible = false;
+
+        this.select[4] = this.add.sprite(575, 485, 'select');
+        this.select[4].anchor = new Phaser.Point(0.5, 0.5);
+        this.select[4].width = 55;
+        this.select[4].height = 105;
+        this.select[4].rotation = 2.5 + Math.PI;
+        this.select[4].visible = false;
+
+        this.select[5] = this.add.sprite(540, 510, 'select');
+        this.select[5].anchor = new Phaser.Point(0.5, 0.5);
+        this.select[5].width = 105;
+        this.select[5].height = 25;
+        this.select[5].rotation = Math.PI - 2.23;
+        this.select[5].visible = false;
+
+        // KEYBOARD CONTROLS
+        this.upKey = game.input.keyboard.addKey(Phaser.Keyboard.UP);
+        this.upKey.onDown.add(BasicGame.Game.prototype.select_up, this);
+
+        this.downKey = game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
+        this.downKey.onDown.add(BasicGame.Game.prototype.select_down, this);
+
+        this.leftKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
+        this.leftKey.onDown.add(BasicGame.Game.prototype.select_left, this);
+
+        this.rightKey = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
+        this.rightKey.onDown.add(BasicGame.Game.prototype.select_right, this);
+
+        this.shiftkey = game.input.keyboard.addKey(Phaser.Keyboard.SHIFT);
+        this.shiftkey.onDown.add(BasicGame.Game.prototype.select, this);
+
+        this.enterKey = game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
+        this.enterKey.onDown.add(BasicGame.Game.prototype.enter_selection, this);
+
+        this.esckey = game.input.keyboard.addKey(Phaser.Keyboard.ESC);
+        this.esckey.onDown.add(BasicGame.Game.prototype.toggleGC, this);
 
         // Display Your Name
         this.kingdom_names[0] = this.add.text(400, 530, self + ": " + health["self"], { font: "32px Arial", fill: "#000000" });
@@ -531,6 +612,7 @@ BasicGame.Game.prototype = {
         disconnect = false;
         backToMainMenu();
     },
+
     attack0: function () {
 
         if (!this.submit_boolean) {
@@ -631,6 +713,105 @@ BasicGame.Game.prototype = {
         } 
 
 
+    },
+
+    select_down: function () {
+        if (this.keycontrlgame) { 
+            if (this.select_what == -1)
+            {
+                this.select_what = 0;
+                this.select[this.select_what].visible = true;
+            }
+            else if ((this.select_what == 0) || (this.select_what == 2) || (this.select_what == 4))
+            {
+                this.select[this.select_what++].visible = false;
+                this.select[this.select_what].visible = true;
+            }
+        }
+     },
+    select_up: function() {
+        if (this.keycontrlgame) { 
+            if (this.select_what == -1)
+            {
+                this.select_what = 0;
+                this.select[this.select_what].visible = true;
+            }
+            else if ((this.select_what == 1) || (this.select_what == 3) || (this.select_what == 5))
+            {
+                this.select[this.select_what--].visible = false;
+                this.select[this.select_what].visible = true;
+            }
+        }
+     },
+    select_right: function() {
+        if (this.keycontrlgame) { 
+            if (this.select_what == -1)
+            {
+                this.select_what = 0;
+                this.select[this.select_what].visible = true;
+            }
+            else if ((this.select_what == 0) || (this.select_what == 1) || (this.select_what == 2) || (this.select_what == 3))
+            {
+                this.select[this.select_what].visible = false;
+                this.select_what += 2;
+                this.select[this.select_what].visible = true;
+            }
+        }
+     },
+    select_left: function () {
+        if (this.keycontrlgame) { 
+            if (this.select_what == -1)
+            {
+                this.select_what = 0;
+                this.select[this.select_what].visible = true;
+            }
+            else if ((this.select_what == 4) || (this.select_what == 5) || (this.select_what == 2) || (this.select_what == 3))
+            {
+                this.select[this.select_what].visible = false;
+                this.select_what -= 2;
+                this.select[this.select_what].visible = true;
+            }
+        }
+     },
+    select: function () {
+        if (this.keycontrlgame) {    
+            if (this.select_what == -1 || this.select_what > 5)
+            {
+                this.select_what = 0;
+                this.select[this.select_what].visible = true;
+            }
+            else if (this.select_what == 0)
+            {
+                this.attack0();
+            }
+            else if (this.select_what == 1)
+            {
+                this.defend0();
+            }
+            else if (this.select_what == 2)
+            {
+                this.attack1();
+            }
+            else if (this.select_what == 3)
+            {
+                this.defend1();
+            }
+            else if (this.select_what == 4)
+            {
+                this.attack2();
+            }
+            else if (this.select_what == 5)
+            {
+                this.defend2();
+            }
+        }
+    },
+
+    enter_selection: function () {
+        if (this.keycontrlgame)
+        {
+            this.submit();
+        }
     },
 
     submit: function () {
@@ -738,6 +919,43 @@ BasicGame.Game.prototype = {
                 else if ((direction == 2) || (direction == 3)) { return 8; }
                 else if ((direction == 4) || (direction == 5)) { return 7; }
             }
+        }
+    },
+
+    toggleGC: function () { 
+
+        if (this.keycontrlgame)
+        {
+            this.keycontrlgame = false;
+            $("#messageInput").focus();
+            game.input.keyboard.removeKey(Phaser.keyboard.SHIFT);
+            game.input.keyboard.removeKey(Phaser.keyboard.ENTER);
+            game.input.keyboard.removeKey(Phaser.keyboard.UP);
+            game.input.keyboard.removeKey(Phaser.keyboard.DOWN);
+            game.input.keyboard.removeKey(Phaser.keyboard.LEFT);
+            game.input.keyboard.removeKey(Phaser.keyboard.RIGHT);
+        }
+        else
+        {
+            this.keycontrlgame = true;
+
+            this.upKey = game.input.keyboard.addKey(Phaser.Keyboard.UP);
+            this.upKey.onDown.add(BasicGame.Game.prototype.select_up, this);
+
+            this.downKey = game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
+            this.downKey.onDown.add(BasicGame.Game.prototype.select_down, this);
+
+            this.leftKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
+            this.leftKey.onDown.add(BasicGame.Game.prototype.select_left, this);
+
+            this.rightKey = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
+            this.rightKey.onDown.add(BasicGame.Game.prototype.select_right, this);
+
+            this.shiftkey = game.input.keyboard.addKey(Phaser.Keyboard.SHIFT);
+            this.shiftkey.onDown.add(BasicGame.Game.prototype.select, this);
+
+            this.enterKey = game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
+            this.enterKey.onDown.add(BasicGame.Game.prototype.enter_selection, this);
         }
     }
 

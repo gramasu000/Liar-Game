@@ -46,6 +46,7 @@ BasicGame.Preloader.prototype = {
 		this.load.image('defend', 'assets/defend.png');
 		this.load.image('attack','assets/attack.png');
 		this.load.spritesheet('submit', 'assets/submitspritesheet.png', 154, 63, 2, 0, 0);
+		this.load.image('select', 'assets/selection.png');
 
 	},
 
