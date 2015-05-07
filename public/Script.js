@@ -108,9 +108,11 @@ socket.on('setPseudo', function(data) {
         if (data[i] != self)
         {
             otherusers.push(data[i]);
-            $("#otheruser").append('<div><input type="radio" id="'+ data[i] + '" name="recipient" value="'+ data[i] +'">' + data[i] + '</div>');    
+            $("#otheruser").append('<div><input type="radio" class="ChatRadio" id="'+ data[i] + '" name="recipient" value="'+ data[i] +'">' + data[i] + '</div>');    
         }
     }
+    document.getElementById(otherusers[0]).checked = true;
+
 });
 
 socket.on('message', function(data) {
@@ -148,8 +150,38 @@ function onStart() {
             joinRoom()});
     $("#submit").click(function() {sentMessage()});
     $("#messageInput").keyup(function(e) {
-        if(e.keyCode == 13)
-            sentMessage()});
+        if(e.keyCode == 13 && !(keycontrlgame))
+        {
+            sentMessage();
+        }
+        if ((e.keyCode == 40) && !(keycontrlgame))
+        {
+            if (document.getElementById(otherusers[0]).checked)
+            {
+                document.getElementById(otherusers[0]).checked = false;
+                document.getElementById(otherusers[1]).checked = true;
+            }
+            else if (document.getElementById(otherusers[1]).checked)
+            {
+                document.getElementById(otherusers[1]).checked = false;
+                document.getElementById(otherusers[2]).checked = true;
+            }
+
+        }
+        if ((e.keyCode == 38) && !(keycontrlgame))
+        {
+            if (document.getElementById(otherusers[1]).checked)
+            {
+                document.getElementById(otherusers[1]).checked = false;
+                document.getElementById(otherusers[0]).checked = true;
+            }
+            else if (document.getElementById(otherusers[2]).checked)
+            {
+                document.getElementById(otherusers[2]).checked = false;
+                document.getElementById(otherusers[1]).checked = true;
+            }
+        }
+    });
 
 }
 
