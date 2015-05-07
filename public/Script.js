@@ -1,10 +1,14 @@
-var socket = io.connect("http://liargame-akgr.rhcloud.com:8000");
-//var socket = io.connect();
+//var socket = io.connect("http://liargame-akgr.rhcloud.com:8000");
+var socket = io.connect();
 
 var self = null;
 var otherusers = [];
 var num_messages = 0;
 var defaultName;
+
+// Related to Game
+var whoSubmitted = [false, false, false];
+var otherPlayerDisconnect = [false, false, false];
 
 // Constant Values - MUST MATCH THE SAME NAME ON SERVER FILE
 var GAME_TIME = 150;
@@ -49,6 +53,8 @@ function setPseudo(isDefault) {
     isDefault = typeof isDefault !== 'undefined' ? isDefault : false;
     if ($("#pseudoInput").val() != "")
     {
+        whoSubmitted = [false, false, false];
+        otherPlayerDisconnect = [false, false, false];
         self = $("#pseudoInput").val();
         var data = {'pseudo' : self, 'default' : isDefault};
         socket.emit('setPseudo', data);

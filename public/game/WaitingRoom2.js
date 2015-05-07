@@ -44,6 +44,7 @@ BasicGame.WaitingRoom2.prototype = {
 	update: function () {
 		text.setText("Game Starting in " + timer);
 		if (timer <= 0){
+			
 			this.state.start('Game');
 			
 		}

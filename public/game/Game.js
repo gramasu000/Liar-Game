@@ -67,8 +67,7 @@ var gametimer;
 
 var keycontrlgame;
 
-var whoSubmitted = [false, false, false];
-var otherPlayerDisconnect = [false, false, false];
+// Use whoSumbitted, otherPlayers from setPseudos
 
 socket.on('health', function(userhealth) {
 
@@ -140,8 +139,8 @@ BasicGame.Game.prototype = {
         record = false;
         gametimer = GAME_TIME;
 
-        otherPlayerDisconnect = [false, false, false];
-        whoSubmitted = [false, false, false];
+        //otherPlayerDisconnect = [false, false, false];
+        //whoSubmitted = [false, false, false];
 
         // Background
         this.gameBackground = this.add.sprite(0,0,'gameBackground');
