@@ -86,7 +86,7 @@ function GameCountDown(time, room) {
 	var countdown = setInterval(function(){
 		io.to(room).emit('Gamecountdown', timeLeft);
 		timeLeft--;
-		if ((timeLeft < 0) || (presubmit[room])){
+		if ((timeLeft < 0) || (presubmit[room]) || (!gamerunning[room])){
 			clearInterval(countdown);
 			ResultsCountDown(RESULTS_TIME, room);
 			gamecount[room] = false;
@@ -101,13 +101,10 @@ function ResultsCountDown(time, room) {
 	var countdown = setInterval(function(){
 		io.to(room).emit('Resultscountdown', timeLeft);
 		timeLeft--;
-		if (timeLeft < 0)
+		if (timeLeft < 0 || (!gamerunning[room]))
 		{
 			clearInterval(countdown);
-			if (gamerunning[room])
-			{
-				GameCountDown(GAME_TIME, room);
-			}
+			GameCountDown(GAME_TIME, room);
 			gamecount[room] = true;
 			presubmit[room] = false;
 		}
@@ -168,6 +165,39 @@ function roomExists(room) {
 	}
 	return false;
 };
+
+// Helper function sends info about one user to everyone else
+function decodeAndSend (userID, MESSAGE) {
+
+	// If player X disconnects/submits during game, we inform other players
+	var i = clientPlayers[userID];
+	var roomName = clients[userID];
+
+	if (i == 0)
+	{
+		// We inform player Y that (in their view) player Z is disconnected/has submitted
+		io.to(socketIDs[roomName][1]).emit(MESSAGE, 0);
+		io.to(socketIDs[roomName][2]).emit(MESSAGE, 0);
+		io.to(socketIDs[roomName][3]).emit(MESSAGE, 0);
+	}
+	else if (i == 1) {
+		io.to(socketIDs[roomName][0]).emit(MESSAGE, 0);
+		io.to(socketIDs[roomName][2]).emit(MESSAGE, 1);
+		io.to(socketIDs[roomName][3]).emit(MESSAGE, 1);
+	}
+	else if (i == 2) {
+		io.to(socketIDs[roomName][0]).emit(MESSAGE, 1);
+		io.to(socketIDs[roomName][1]).emit(MESSAGE, 1);
+		io.to(socketIDs[roomName][3]).emit(MESSAGE, 2);
+
+	}
+	else if (i == 3) {
+		io.to(socketIDs[roomName][0]).emit(MESSAGE, 2);
+		io.to(socketIDs[roomName][1]).emit(MESSAGE, 2);
+		io.to(socketIDs[roomName][2]).emit(MESSAGE, 2);
+	}
+
+}
 
 function handleDisconnect(socket,state){
 	if (state == "MainMenu-HostRoom"){
@@ -246,34 +276,10 @@ function handleDisconnect(socket,state){
 	}
 	else if (state == "Game")
 	{
-		roomName = clients[socket.id];
+
 		health[socket.id] = 0;
 
-		// If player X disconnects during game, we inform other players 
-		if (clientPlayers[socket.id] == 0)
-		{
-			// We inform player Y that (in their view) player Z is disconnected
-			io.to(socketIDs[roomName][1]).emit('playerDisconnect', 0);
-			io.to(socketIDs[roomName][2]).emit('playerDisconnect', 0);
-			io.to(socketIDs[roomName][3]).emit('playerDisconnect', 0);
-		}
-		else if (clientPlayers[socket.id] == 1) {
-			io.to(socketIDs[roomName][0]).emit('playerDisconnect', 0);
-			io.to(socketIDs[roomName][2]).emit('playerDisconnect', 1);
-			io.to(socketIDs[roomName][3]).emit('playerDisconnect', 1);
-		}
-		else if (clientPlayers[socket.id] == 2) {
-			io.to(socketIDs[roomName][0]).emit('playerDisconnect', 1);
-			io.to(socketIDs[roomName][1]).emit('playerDisconnect', 1);
-			io.to(socketIDs[roomName][3]).emit('playerDisconnect', 2);
-
-		}
-		else if (clientPlayers[socket.id] == 3) {
-			io.to(socketIDs[roomName][0]).emit('playerDisconnect', 2);
-			io.to(socketIDs[roomName][1]).emit('playerDisconnect', 2);
-			io.to(socketIDs[roomName][2]).emit('playerDisconnect', 2);
-		}
-
+		decodeAndSend(socket.id, "playerDisconnect");
 		
 	}
 
@@ -444,6 +450,9 @@ io.sockets.on('connection', function (socket) {
 
 		console.log('User ' + socket.pseudo  + "," + i + ' submitted actions. ' + (actions[roomName].length-1));
 
+		decodeAndSend(id, "whoSubmitted");
+
+
 		if ((who_set_actions[roomName][0] || health[socketIDs[roomName][0]] <= 0) 
 			&& (who_set_actions[roomName][1] || health[socketIDs[roomName][1]] <= 0)
 			&& (who_set_actions[roomName][2] || health[socketIDs[roomName][2]] <= 0) 
@@ -462,6 +471,7 @@ io.sockets.on('connection', function (socket) {
 			}
 
 			presubmit[roomName] = true;
+
 			for (var j = 0; j < rooms[roomName]; j++)
 			{
 				var init_decrease = 0;
@@ -477,76 +487,82 @@ io.sockets.on('connection', function (socket) {
 				console.log(init_decrease);
 			}
 
+			// Health after initdecrease
+			var h0 = health[socketIDs[roomName][0]];
+			var h1 = health[socketIDs[roomName][1]];
+			var h2 = health[socketIDs[roomName][2]];
+			var h3 = health[socketIDs[roomName][3]];
+
 			// Enumerate 12 possibilities
 
 			// If #0 attacked #1 and #1 did not defend and #0 is still alive after init_decrease
-			if ((health[socketIDs[roomName][0]] > 0) && actions[roomName][0][0] && !actions[roomName][1][1])
+			if ((h0 > 0) && actions[roomName][0][0] && !actions[roomName][1][1])
 			{
 				console.log("0 attacks 1");
 				health[socketIDs[roomName][1]] -= 3;
 			}
 			// If #1 attacked #0 and #0 did not defend and #1 is still alive after init_decrease
-			if ((health[socketIDs[roomName][1]] > 0) && actions[roomName][1][0] && !actions[roomName][0][1])
+			if ((h1 > 0) && actions[roomName][1][0] && !actions[roomName][0][1])
 			{
 				console.log("1 attacks 0");
 				health[socketIDs[roomName][0]] -= 3;
 			}
 			// If #0 attacked #2 and #2 did not defend and #0 is still alive after init_decrease
-			if ((health[socketIDs[roomName][0]] > 0) && actions[roomName][0][2] && !actions[roomName][2][1])
+			if ((h0 > 0) && actions[roomName][0][2] && !actions[roomName][2][1])
 			{
 				console.log("0 attacks 2");
 				health[socketIDs[roomName][2]] -= 3;
 			}
 			// If #2 attacked #0 and #0 did not defend and #2 is still alive after init_decrease
-			if ((health[socketIDs[roomName][2]] > 0) && actions[roomName][2][0] && !actions[roomName][0][3])
+			if ((h2 > 0) && actions[roomName][2][0] && !actions[roomName][0][3])
 			{
 				console.log("2 attacks 0");
 				health[socketIDs[roomName][0]] -= 3;
 			}
 			//If #0 attacked #3 and #3 did not defend and #0 is still alive after init_decrease
-			if ((health[socketIDs[roomName][0]] > 0) && actions[roomName][0][4] && !actions[roomName][3][1])
+			if ((h0 > 0) && actions[roomName][0][4] && !actions[roomName][3][1])
 			{
 				console.log("0 attacks 3");
 				health[socketIDs[roomName][3]] -= 3;
 			}
 			// If #3 attacked #0 and #0 did not defend and #3 is still alive after init_decrease
-			if ((health[socketIDs[roomName][3]] > 0) && actions[roomName][3][0] && !actions[roomName][0][5])
+			if ((h3 > 0) && actions[roomName][3][0] && !actions[roomName][0][5])
 			{
 				console.log("3 attacks 0");
 				health[socketIDs[roomName][0]] -= 3;
 			}
 			// If #1 attacked #2 and #2 did not defend and #1 is still alive after init_decrease
-			if ((health[socketIDs[roomName][1]] > 0) && actions[roomName][1][2] && !actions[roomName][2][3])
+			if ((h1 > 0) && actions[roomName][1][2] && !actions[roomName][2][3])
 			{
 				console.log("1 attacks 2");
 				health[socketIDs[roomName][2]] -=  3;
 			}
 			// If #2 attacked #1 and #1 did not defend and #2 is still alive after init_decrease
-			if ((health[socketIDs[roomName][2]] > 0) && actions[roomName][2][2] && !actions[roomName][1][3])
+			if ((h2 > 0) && actions[roomName][2][2] && !actions[roomName][1][3])
 			{
 				console.log("2 attacks 1");
 				health[socketIDs[roomName][1]] -=  3;
 			}
 			// If #1 attacked #3 and #3 did not defend and #1 is still alive after init_decrease
-			if ((health[socketIDs[roomName][1]] > 0) && actions[roomName][1][4] && !actions[roomName][3][3])
+			if ((h1 > 0) && actions[roomName][1][4] && !actions[roomName][3][3])
 			{
 				console.log("1 attacks 3");
 				health[socketIDs[roomName][3]] -=  3;
 			}
 			// If #3 attacked #1 and #1 did not defend and #3 is still alive after init_decrease
-			if ((health[socketIDs[roomName][3]] > 0) && actions[roomName][3][2] && !actions[roomName][1][5])
+			if ((h3 > 0) && actions[roomName][3][2] && !actions[roomName][1][5])
 			{
 				console.log("3 attacks 1");
 				health[socketIDs[roomName][1]] -=  3;
 			}
 			// If #2 attacked #3 and #3 did not defend and #2 is still alive after init_decrease
-			if ((health[socketIDs[roomName][2]] > 0) && actions[roomName][2][4] && !actions[roomName][3][5])
+			if ((h2 > 0) && actions[roomName][2][4] && !actions[roomName][3][5])
 			{
 				console.log("2 attacks 3");
 				health[socketIDs[roomName][3]] -=  3;
 			}
 			// If #3 attacked #2 and #2 did not defend and #3 is still alive after init_decrease
-			if ((health[socketIDs[roomName][3]] > 0) && actions[roomName][3][4] && !actions[roomName][2][5])
+			if ((h3 > 0) && actions[roomName][3][4] && !actions[roomName][2][5])
 			{
 				console.log("3 attacks 2");
 				health[socketIDs[roomName][2]] -=  3;
@@ -598,7 +614,6 @@ io.sockets.on('connection', function (socket) {
 		
 		var roomName = clients[socket.id];
 		console.log("user " + socket.id + " has exited room " + roomName);
-		io.to(clients[socket.id]).emit('gameOver');
 		
 		// Just in case
 		gamerunning[roomName] = false;

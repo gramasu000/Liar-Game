@@ -38,7 +38,8 @@ BasicGame.Game = function (game) {
     this.attack_booleans;
     
     this.submit_button;
-    this.submit_boolean; 
+    this.submit_boolean;
+    this.submit_messages; 
 
     this.timer_text;
     this.win_text;
@@ -54,7 +55,8 @@ var record;
 var record_counter;
 var gametimer;
 
-var otherPlayerDisconnect;
+var whoSubmitted = [false, false, false];
+var otherPlayerDisconnect = [false, false, false];
 
 socket.on('health', function(userhealth) {
 
@@ -72,16 +74,17 @@ socket.on('record-actions', function(data) {
 });
 
 socket.on('Gamecountdown', function(time){ gametimer = time; });
-socket.on('Resultscountdown', function(time) { record_counter = time; }); 
+socket.on('Resultscountdown', function(time) { record_counter = time; });
 
-socket.on('gameOver',function(){
-
-});
+socket.on('whoSubmitted', function(index) { 
+    whoSubmitted[index] = true;
+    console.log("Player " + index + " submitted " + whoSubmitted[index]);
+}); 
 
 socket.on('playerDisconnect', function(index) { 
     health[index] = 0;
-    otherPlayerDisconnect = index;
-    console.log("Player " + index + " disconnected");
+    otherPlayerDisconnect[index] = true;
+    console.log("Player " + index + " disconnected " + otherPlayerDisconnect[index]);
 
 }); 
 
@@ -109,6 +112,7 @@ BasicGame.Game.prototype = {
         
         this.submit_button = null;
         this.submit_boolean = false; 
+        this.submit_messages = {};
 
         health["self"] = MAX_HEALTH;
         health[0] = MAX_HEALTH;
@@ -118,7 +122,8 @@ BasicGame.Game.prototype = {
         record = false;
         gametimer = GAME_TIME;
 
-        otherPlayerDisconnect = -1;
+        otherPlayerDisconnect = [false, false, false];
+        whoSubmitted = [false, false, false];
 
         // Background
         this.gameBackground = this.add.sprite(0,0,'gameBackground');
@@ -345,21 +350,44 @@ BasicGame.Game.prototype = {
         this.kingdom_names[3].anchor = new Phaser.Point(0.5, 0.5);
         this.kingdom_names[3].rotation = -Math.PI/2;
 
+        // Who Sumbitted Messages
+        this.submit_messages[0] = this.add.text(130, 300, "Submitted", { font: "32px Arial", fill: "#FFFFFF" });
+        this.submit_messages[0].anchor = new Phaser.Point(0.5, 0.5);
+        this.submit_messages[0].rotation = Math.PI/2;
+        this.submit_messages[0].visible = false;
+
+        this.submit_messages[1] = this.add.text(400, 140, "Submitted", { font: "32px Arial", fill: "#FFFFFF" });
+        this.submit_messages[1].anchor = new Phaser.Point(0.5, 0.5);
+        this.submit_messages[1].visible = false;
+
+        this.submit_messages[2] = this.add.text(670, 300, "Submitted", { font: "32px Arial", fill: "#FFFFFF" });
+        this.submit_messages[2].anchor = new Phaser.Point(0.5, 0.5);
+        this.submit_messages[2].rotation = -Math.PI/2;
+        this.submit_messages[2].visible = false;
+
+        // Start Timer
         socket.emit('startGameTimer', GAME_TIME);
 
-        // Display timer
+        // Display Timer
         this.timer_text = this.add.text(20,20, gametimer, {font: "32px Arial", fill: "#FFFFFF" });
     },
 
     update: function () {
 
         //  Honestly, just about anything could go here. It's YOUR game after all. Eat your heart out!
-        
+
+        // RECORD PHASE
         if (record && (record_counter > 0))
         {
-            // Remove the submit button
-            this.submit_button.visible = false;
+            // Set Counter Text to Record Counter
             this.timer_text.setText(record_counter);
+
+            // Remove Who Submitted Messages
+            for (var i = 0; i < 3; i++)
+            {
+                whoSubmitted[i] = false;
+                this.submit_messages[i].visible = false;
+            }
 
             // i represents other user "global" position
             for (var i = 0; i < 3; i++)
@@ -393,6 +421,7 @@ BasicGame.Game.prototype = {
             this.kingdom_names[3].setText(otherusers[2] + ": " + health[2]);
 
         }
+        // BETWEEN RECORD PHASE AND NEXT GAME PHASE
         else if (record_counter <= 0)
         {
             // Stop displaying results
@@ -436,7 +465,7 @@ BasicGame.Game.prototype = {
             else
             {
                 this.submit_button = false;
-                this.submit();
+                //this.submit();
                 health["self"] = 0;
                 this.lose_text = this.add.text(400, 270, "You Lose!", {font: "32px Arial", fill: "#FFFFFF" });
                 this.lose_text = new Phaser.Point(0.5,0.5);
@@ -464,22 +493,36 @@ BasicGame.Game.prototype = {
 
 
         }
+        // GAME PHASE
         else
         {
             this.timer_text.setText(gametimer);
+
             if (gametimer <= 0)
             {
                 this.submit();
             }
+
+            for (var i = 0; i < 3; i++)
+            {
+                if (whoSubmitted[i])
+                {
+                    this.submit_messages[i].visible = true;
+                }
+            }
+
         }
 
+        // ALL THROUGHOUT THE GAME
+
         //console.log(otherPlayerDisconnect);
-        if (otherPlayerDisconnect != -1)
+        for (var i = 0; i < 3; i++)
         {
-            console.log("Show that a player " + otherPlayerDisconnect + " disconnected");
-            this.kingdom_names[otherPlayerDisconnect + 1].setText("Disconnected");
-            this.kingdom[otherPlayerDisconnect + 1].tint = 0x794044;
-            otherPlayerDisconnect = -1;
+            if (otherPlayerDisconnect[i])
+            {
+                this.kingdom_names[i + 1].setText("Disconnected");
+                this.kingdom[i + 1].tint = 0x794044;
+            }
         }
 
     },
@@ -592,7 +635,7 @@ BasicGame.Game.prototype = {
 
     submit: function () {
 
-        
+        this.submit_button.visible = false;
         if (!this.submit_boolean || (health["self"] == 0))
         {
 
