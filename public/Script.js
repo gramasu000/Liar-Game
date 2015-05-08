@@ -1,5 +1,5 @@
-var socket = io.connect("http://liargame-akgr.rhcloud.com:8000");
-//var socket = io.connect();
+//var socket = io.connect("http://liargame-akgr.rhcloud.com:8000");
+var socket = io.connect();
 
 var self = null;
 var otherusers = [];
@@ -155,6 +155,9 @@ function onStart() {
         if(e.keyCode == 13)
             joinRoom()});
     $("#submit").click(function() {sentMessage()});
+    $("#messageInput").focus(function () {
+        keycontrlgame = false;
+    });
     $("#messageInput").keyup(function(e) {
         if(e.keyCode == 13 && !(keycontrlgame))
         {

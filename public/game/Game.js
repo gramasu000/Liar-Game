@@ -57,6 +57,8 @@ BasicGame.Game = function (game) {
 
     this.backButton;
 
+    this.toggleText;
+
 };
 
 var health = {};
@@ -407,10 +409,10 @@ BasicGame.Game.prototype = {
         this.rightKey.onDown.add(BasicGame.Game.prototype.select_right, this);
 
         this.shiftkey = game.input.keyboard.addKey(Phaser.Keyboard.SHIFT);
-        this.shiftkey.onDown.add(BasicGame.Game.prototype.select, this);
+        this.shiftkey.onDown.add(BasicGame.Game.prototype.enter_selection, this);
 
         this.enterKey = game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
-        this.enterKey.onDown.add(BasicGame.Game.prototype.enter_selection, this);
+        this.enterKey.onDown.add(BasicGame.Game.prototype.select, this);
 
         this.esckey = game.input.keyboard.addKey(Phaser.Keyboard.ESC);
         this.esckey.onDown.add(BasicGame.Game.prototype.toggleGC, this);
@@ -451,6 +453,9 @@ BasicGame.Game.prototype = {
 
         // Display Timer
         this.timer_text = this.add.text(20,20, gametimer, {font: "32px Arial", fill: "#FFFFFF" });
+
+        // Display Toggle
+        this.toggleText = this.add.text(680,20, "Game Mode", {font: "18px Arial", fill: "#FFFFFF" });
     },
 
     update: function () {
@@ -610,6 +615,16 @@ BasicGame.Game.prototype = {
                 this.kingdom[i + 1].tint = 0x794044;
             }
         }
+
+        if (this.game.input.mousePointer.isDown)
+        {
+            keycontrlgame = true;
+        }
+
+        if (keycontrlgame)
+            this.toggleText.setText("Game Mode");
+        else
+            this.toggleText.setText("Chat Mode");
 
     },
 
