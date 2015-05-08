@@ -52,7 +52,7 @@ BasicGame.KeyboardControl.prototype = {
             "RIGHT - moves right among actions\n" + 
             "SHIFT - chooses and unchooses actions\n" + 
             "ENTER - submits actions";
-        var chatDescriptions = "ESC - toggles to the chat\n" +
+        var chatDescriptions = "ESC - toggles to the game\n" +
             "UP - moves up in player list\n" + 
             "DOWN - moves down in player list\n" +
             "ENTER - send message to selected player";
