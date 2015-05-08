@@ -106,7 +106,9 @@ BasicGame.MainMenu.prototype = {
 		this.arrowGroup.setAll('visible',false);
 		var arrows = this.arrowGroup.children;
 		var length = arrows.length;
-		arrows[(++this.currentArrow % length)].visible = true;
+		this.currentArrow++;
+		this.currentArrow %= length;
+		arrows[this.currentArrow].visible = true;
 	},
 
 	hostGame: function (pointer) {
