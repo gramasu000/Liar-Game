@@ -68,7 +68,7 @@ app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 app.set("view options", { layout: false });
 app.set('port', process.env.OPENSHIFT_NODEJS_PORT || 3000);  
-app.set('ipaddr', process.env.OPENSHIFT_NODEJS_IP || "192.168.0.102");
+app.set('ipaddr', process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1");
 app.use(express.static(__dirname + '/public'));
 app.engine('html', ejs.renderFile);
 
