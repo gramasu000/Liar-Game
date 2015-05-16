@@ -278,9 +278,36 @@ function handleDisconnect(socket,state){
 	{
 
 		health[socket.id] = 0;
+		var roomName = clients[socket.id]
+		rooms[roomName]--;
+		console.log("user " + socket.id + " has exited room " + roomName);
+		if (rooms[roomName] > 0)
+		{
+			decodeAndSend(socket.id, "playerDisconnect");
+		}
+		else
+		{
+			
+			console.log("Game Over");
+				// Just in case
+			gamerunning[roomName] = false;
+			gamecount[roomName] = false;
+			pseudocount[roomName] = false;
+			socket.broadcast.emit('deleteRoomButton',roomName);
 
-		decodeAndSend(socket.id, "playerDisconnect");
-		
+			for (var i = 0; i < 4; i++)
+			{
+				delete clientPlayers[socketIDs[roomName][i]];
+				delete socketStates[socketIDs[roomName][i]];
+				delete health[socketIDs[roomName][i]];
+	    		delete IDtoPseudo[socketIDs[roomName][i]];
+	    	}
+
+	    	delete rooms[roomName];
+			delete socketIDs[roomName];
+			delete clients[roomName];
+			delete who_set_pseudo[roomName];
+		}
 	}
 
 
@@ -613,7 +640,7 @@ io.sockets.on('connection', function (socket) {
 	socket.on('gameEnd', function (data) {
 		
 		var roomName = clients[socket.id];
-		console.log("user " + socket.id + " has exited room " + roomName);
+		console.log("Game Over");
 		
 		// Just in case
 		gamerunning[roomName] = false;
